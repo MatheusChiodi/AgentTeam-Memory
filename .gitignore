@@ -1,0 +1,20 @@
+# dependencies (the project itself has none, but keep this for safety)
+node_modules/
+
+# hook diagnostics (written at runtime)
+**/.last-task-completed.json
+**/.last-teammate-idle.json
+
+# settings backups created by install.mjs
+*.bak-*
+
+# per-project opt-in marker (created by `memory.mjs enable`)
+.memory-team
+
+# a local vault if someone points one inside the repo
+/memory-vault/
+/vault/
+
+# OS noise
+.DS_Store
+Thumbs.db
