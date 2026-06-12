@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // build-guide.mjs — generates docs/system-guide.excalidraw, a complete visual walkthrough
 // of the memory-team system (user flow + internal logic). Run: node tools/build-guide.mjs
-// Plain node script (Math.random/Date allowed here). No dependencies.
+// No dependencies. Output is DETERMINISTIC: re-running produces a byte-identical file so the
+// versioned .excalidraw never shows spurious diffs (no Math.random/Date.now here on purpose).
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -10,8 +11,13 @@ import { fileURLToPath } from 'node:url';
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUT = join(ROOT, 'docs', 'system-guide.excalidraw');
 
-const rnd = () => Math.floor(Math.random() * 2 ** 31);
-const now = () => Date.now();
+// Deterministic stand-ins for seed/versionNonce: a seeded LCG walks a fixed sequence (one
+// value per call, same order every run). Excalidraw needs stable numbers here; the rough
+// "hand-drawn" look depends on `seed` but not on it being random. updatedAt is a fixed stamp.
+let prng = 0x9e3779b9;
+const rnd = () => { prng = (Math.imul(prng, 1664525) + 1013904223) >>> 0; return prng % 2 ** 31; };
+const STAMP = 1717200000000; // 2024-06-01T00:00:00Z — constant so updatedAt is reproducible
+const now = () => STAMP;
 let idc = 0;
 const els = [];
 
@@ -167,9 +173,22 @@ Y += 340;
 section(40, Y, 1760, 250, '7 · INTERNAL LOGIC  (how the pieces resolve)', TEAL);
 const i = Y + 60;
 box(70, i, 400, 160, 'lib.mjs  (shared core)', 'vaultRoot()  = env MEMORY_VAULT || ~/.claude/memory-vault\nprojectName()= env MEMORY_PROJECT || slug(basename(cwd))\nisEnabled()  = exists(cwd/.memory-team)\npartition()  = <vault>/projects/<proj>/…\n+ parseFM (BOM-safe), walk, slug, today', TEAL, TEALB);
-box(510, i, 380, 160, 'memory.mjs  (CLI)', 'where  → vault, project, enabled?\nenable → marker + partition\nsearch → current project + global (--all = every)\nsave   → atomic note, auto-filed by project\nindex  → per-project _index + master MOC', TEAL, TEALB);
+box(510, i, 380, 160, 'memory.mjs + commands/  (CLI)', 'thin dispatcher: argv → command → render\nregistry.mjs auto-discovers commands/*.mjs\n{ name, summary, usage, run(ctx) } contract\nnotes.mjs data layer (resolve/format/links)\n25 commands · --json on every read', TEAL, TEALB);
 box(930, i, 380, 160, 'hooks  (task-completed / teammate-idle)', 'read JSON on stdin (BOM-stripped)\nresolve cwd → project; if not enabled → exit 0\ntry many field names (task_id/taskId/…)\nscan vault partition for the note\nblock (exit 2) or allow (exit 0)\nwrite .last-*.json for schema diagnostics', TEAL, TEALB);
 box(1350, i, 420, 160, 'install.mjs  (promotion)', 'resolves home (os.homedir) + vault\ncopies runtime + agents (resolves {{MEM}})\nMERGES settings.json (idempotent, backup)\ninjects protocol between markers in CLAUDE.md\nscaffolds vault + master index\n--home/--vault override for any machine', TEAL, TEALB);
+Y += 290;
+
+// ===== SECTION 8: COMMAND CATALOG (25 commands) =====
+section(40, Y, 1760, 250, '8 · COMMAND CATALOG  (25 commands — one file per command in commands/)', GREEN);
+const c = Y + 60;
+box(70, c, 250, 170, 'Core (F0/F1)', 'where   vault/project/enabled\nenable  marker + enforce\nsearch  rank (+global, --all)\nsave    atomic note\nindex   _index + master MOC', GREEN, GREENB);
+box(340, c, 230, 170, 'Navigation (F2)', 'list    filter notes\n        (type/tag/agent/\n         project/since/limit)\nshow    print one note\nrecent  N newest (def 10)', BLUE, BLUEB);
+box(590, c, 230, 170, 'Tags (F3)', 'tags    frequency histogram\ntag     add/remove on a note\nretag   rename a tag across\n        all notes (old → new)', VIO, VIOB);
+box(840, c, 250, 170, 'Knowledge graph (F4)', 'backlinks  who links here\nlinks      outgoing (resolved\n           vs dangling)\ngraph      Mermaid diagram\norphans    no in/out links', TEAL, TEALB);
+box(1110, c, 230, 170, 'Analytics (F5)', 'stats     totals byType/\n          byAgent/byProject,\n          top tags, orphans\ntimeline  notes by day\n          (--since/--limit)', ORA, ORAB);
+box(1360, c, 230, 170, 'Validate & clean (F6/F7)', 'validate  lint frontmatter\n          (exit 1 on problems)\ndedupe    suspected dups\nprune     empty/placeholder →\n          archive (--apply)', RED, REDB);
+box(1610, c, 190, 170, 'Lifecycle / Backup\n(F8 / F9)', 'archive  → _archive\n         (--restore)\nmove     to project\nrename   new title\nexport   json|md\nimport   from bundle', GREY, GREYB);
+text(70, c + 185, 'Every read command accepts --json (F10): the dispatcher emits only res.data, so output is pipeline/CI/agent consumable.', 13, GREEN, 2);
 Y += 290;
 
 // ===== KEY / LEGEND =====

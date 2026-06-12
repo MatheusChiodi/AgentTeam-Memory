@@ -1,0 +1,29 @@
+{
+  "name": "agentteam-memory",
+  "version": "0.2.0",
+  "description": "Persistent, per-project memory for Claude Code agent teams, backed by an Obsidian vault. Zero-dependency Node.js CLI.",
+  "type": "module",
+  "bin": {
+    "memory": "memory-team/memory.mjs"
+  },
+  "scripts": {
+    "memory": "node memory-team/memory.mjs",
+    "test": "node --test \"memory-team/test/*.test.mjs\"",
+    "test:watch": "node --test --watch \"memory-team/test/*.test.mjs\"",
+    "build:guide": "node tools/build-guide.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "claude-code",
+    "agent-teams",
+    "memory",
+    "obsidian",
+    "vault",
+    "cli"
+  ],
+  "author": "Matheus Chiodi",
+  "license": "MIT",
+  "dependencies": {}
+}
