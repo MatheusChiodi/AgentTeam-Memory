@@ -50,11 +50,14 @@ mkdirSync(DEST, { recursive: true });
 mkdirSync(join(DEST, 'hooks'), { recursive: true });
 mkdirSync(AGENTS, { recursive: true });
 
-// 1) copy runtime (lib + cli + hooks)
+// 1) copy runtime (lib + data layer + cli + commands + hooks)
 copyFileSync(join(SRC, 'lib.mjs'), join(DEST, 'lib.mjs'));
+copyFileSync(join(SRC, 'notes.mjs'), join(DEST, 'notes.mjs'));
 copyFileSync(join(SRC, 'memory.mjs'), join(DEST, 'memory.mjs'));
+mkdirSync(join(DEST, 'commands'), { recursive: true });
+for (const c of readdirSync(join(SRC, 'commands'))) copyFileSync(join(SRC, 'commands', c), join(DEST, 'commands', c));
 for (const h of readdirSync(join(SRC, 'hooks'))) copyFileSync(join(SRC, 'hooks', h), join(DEST, 'hooks', h));
-log(`✓ runtime -> ${fwd(DEST)}`);
+log(`✓ runtime -> ${fwd(DEST)} (lib + notes + cli + commands + hooks)`);
 
 // 2) copy agents with {{MEM}} resolved
 let nAgents = 0;
