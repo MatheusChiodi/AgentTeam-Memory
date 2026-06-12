@@ -1,5 +1,5 @@
 // move — relocate a note to the equivalent folder in another project, fixing fm.project.
-import { writeFileSync, rmSync } from 'node:fs';
+import { writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { resolveNotes, formatNote, relOf } from '../notes.mjs';
 import { partition, ensurePartition, slug } from '../lib.mjs';
@@ -33,6 +33,8 @@ export default {
     const destDir = partition(ROOT, target)[sub] || partition(ROOT, target).memory;
     const dest = join(destDir, basename(note.file));
     if (note.file === dest) return fail(`already in ${target}`);
+    // Don't clobber a different note that already occupies the destination name.
+    if (existsSync(dest)) return fail(`a note named "${basename(note.file)}" already exists in ${target}`);
 
     const fm = { ...note.fm, project: target };
     writeFileSync(dest, formatNote(fm, note.body), 'utf8');

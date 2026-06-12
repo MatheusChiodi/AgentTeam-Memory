@@ -1,5 +1,5 @@
 // rename — give a note a new title: rewrite its `# heading`, slug + keep any date prefix.
-import { renameSync, writeFileSync } from 'node:fs';
+import { renameSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname, basename } from 'node:path';
 import { resolveNotes, relOf, formatNote } from '../notes.mjs';
 import { slug } from '../lib.mjs';
@@ -27,6 +27,12 @@ export default {
     const prefix = (DATE_PREFIX.exec(note.name) || ['', ''])[1];
     const newName = `${prefix}${slug(title)}`;
     const dest = join(dirname(note.file), `${newName}.md`);
+
+    // Refuse to clobber a different note that already owns the target name —
+    // otherwise the rename would silently overwrite (and destroy) it.
+    if (dest !== note.file && existsSync(dest)) {
+      return fail(`a note named "${newName}" already exists in that folder`);
+    }
 
     // Rewrite (or prepend) the first `# heading` line so it matches the new title.
     let body = note.body;

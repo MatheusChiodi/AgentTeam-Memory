@@ -124,12 +124,24 @@ export function formatNote(fm, body) {
     if (v == null || v === '') return;
     if (Array.isArray(v)) {
       const inner = v.map((x) => {
-        const s = String(x);
-        return s.startsWith('"') || s.startsWith('[') ? s : (k === 'related' ? `"${s}"` : s);
+        const s = String(x).trim();
+        if (k === 'related') {
+          // Normalize any form (`name`, `[[name]]`, `"[[name]]"`, even a stray `[[[name]]]`)
+          // to canonical `"[[name]]"`, matching what `save` writes. Collapsing *all* leading/
+          // trailing brackets (not just a single pair) both prevents and repairs the
+          // `[[[name]]]` triple-bracket regression when a note carrying `related` is rewritten
+          // by tag/retag/move/rename/import.
+          const bare = s.replace(/^"|"$/g, '').replace(/^\[+/, '').replace(/\]+$/, '');
+          return `"[[${bare}]]"`;
+        }
+        return s;
       }).join(', ');
       lines.push(`${k}: [${inner}]`);
     } else if (k === 'summary') {
-      lines.push(`${k}: "${String(v).replace(/^"|"$/g, '').replace(/"/g, '\\"')}"`);
+      // Wrap in quotes, stripping any pre-existing edge quotes. We deliberately do NOT
+      // backslash-escape inner quotes: parseFM only strips edge quotes (it does not
+      // unescape), so escaping here would accumulate `\"` on every rewrite round-trip.
+      lines.push(`${k}: "${String(v).replace(/^"|"$/g, '')}"`);
     } else {
       lines.push(`${k}: ${v}`);
     }

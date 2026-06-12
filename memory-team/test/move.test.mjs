@@ -42,3 +42,17 @@ test('move: missing target fails', async () => {
   assert.equal(res.ok, false);
   assert.match(res.lines.join(' '), /usage: move/);
 });
+
+test('move: refuses to clobber a same-named note in the target project', async () => {
+  // The destination project already has a note with the same filename.
+  seedNote(root, 'otherproj', 'memory', '2026-01-01-thing.md',
+    { type: 'memory', agent: 'b', project: 'otherproj', summary: 'do not lose', created: '2026-01-01' }, '# thing\ndest body');
+  const res = await run('move', { root, pos: ['thing', 'otherproj'] });
+  assert.equal(res.ok, false);
+  assert.equal(res.code, 1);
+  assert.match(res.lines.join(' '), /already exists/);
+  // destination note untouched, source still present
+  const dest = readFileSync(join(root, 'projects', 'otherproj', 'memory', '2026-01-01-thing.md'), 'utf8');
+  assert.match(dest, /dest body/);
+  assert.ok(existsSync(join(root, 'projects', 'testproj', 'memory', '2026-01-01-thing.md')));
+});

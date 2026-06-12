@@ -57,3 +57,16 @@ test('retag: missing args errors', async () => {
   assert.equal(res.ok, false);
   assert.match(res.data.error, /usage: retag/);
 });
+
+test('retag: rewriting a note canonicalizes related (no bracket multiplication, repairs triple)', async () => {
+  // seedNote serializes related: ["[[a]]"] on disk as the degraded `related: [[[a]]]`.
+  seedNote(root, 'testproj', 'memory', '2026-01-05-rel.md',
+    { type: 'memory', project: 'testproj', agent: 'x', summary: 's', tags: ['old'], related: ['[[a]]', '[[b]]'], created: '2026-01-05' }, '# rel\nbody');
+  const res = await run('retag', { pos: ['old', 'fresh'], root });
+  assert.equal(res.ok, true);
+  const txt = readFileSync(join(root, 'projects', 'testproj', 'memory', '2026-01-05-rel.md'), 'utf8');
+  // canonical form, exactly two brackets each side, never three
+  assert.match(txt, /related: \["\[\[a\]\]", "\[\[b\]\]"\]/);
+  assert.doesNotMatch(txt, /\[\[\[/);
+  assert.doesNotMatch(txt, /\]\]\]/);
+});

@@ -43,3 +43,17 @@ test('rename: missing title fails', async () => {
   assert.equal(res.ok, false);
   assert.match(res.lines.join(' '), /usage: rename/);
 });
+
+test('rename: refuses to clobber an existing note with the target name', async () => {
+  // A sibling already owns the slug the rename would produce.
+  seedNote(root, 'testproj', 'memory', '2026-01-01-taken.md',
+    { type: 'memory', agent: 'a', project: 'testproj', summary: 'keep me', created: '2026-01-01' }, '# Taken\nprecious body');
+  const res = await run('rename', { root, pos: ['old-title', 'Taken'] });
+  assert.equal(res.ok, false);
+  assert.equal(res.code, 1);
+  assert.match(res.lines.join(' '), /already exists/);
+  // both notes survive untouched
+  const taken = readFileSync(join(root, 'projects', 'testproj', 'memory', '2026-01-01-taken.md'), 'utf8');
+  assert.match(taken, /precious body/);
+  assert.ok(existsSync(join(root, 'projects', 'testproj', 'memory', '2026-01-01-old-title.md')));
+});
