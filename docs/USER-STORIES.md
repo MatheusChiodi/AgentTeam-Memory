@@ -231,13 +231,13 @@ emite **apenas** `res.data`.
   - `--json` retorna `[{ group: [name…], reason }]`.
 
 ### US-022 — Limpar ruído do vault com segurança
-**Como** librarian **quero** rodar `prune` **para** remover notas vazias/órfãs antigas, mas só depois de revisar o que será apagado.
+**Como** librarian **quero** rodar `prune` **para** tirar notas vazias/placeholder das buscas, mas só depois de revisar o que será afetado.
 - **Tool:** `prune` · **Feature:** F7
 - **Aceite:**
-  - **Dry-run por padrão**: lista o que seria removido sem tocar no disco.
-  - `--apply` é obrigatório para apagar de fato.
-  - Critérios explícitos (ex.: corpo vazio, órfã + antiga); nunca remove `state` ou notas linkadas.
-  - `--json` retorna `{ wouldRemove: [...], applied: bool }`.
+  - **Dry-run por padrão**: lista os candidatos sem tocar no disco.
+  - `--apply` é obrigatório para agir; com ele os candidatos são **arquivados** para `_archive/` (não deletados — recuperável via `archive --restore`).
+  - Critérios explícitos: corpo vazio após remover o `# título`, ou ainda com o placeholder do template `save`.
+  - `--json` retorna `{ candidates: [name…], applied: bool, movedCount: n }`.
 
 ---
 
@@ -320,11 +320,12 @@ emite **apenas** `res.data`.
 
 ### US-031 — Não destruir dados sem confirmação explícita
 **Como** lead **quero** que operações destrutivas exijam uma flag explícita **para** evitar perda acidental de memória.
-- **Tool:** `prune` (`--apply`), `archive` (move, não apaga) · **Feature:** F7/F8
+- **Tool:** `prune` (`--apply`), `archive` (move, não apaga), `move`/`rename` (guarda anti-clobber) · **Feature:** F7/F8
 - **Aceite:**
-  - `prune` sem `--apply` nunca toca o disco.
+  - `prune` sem `--apply` nunca toca o disco; com `--apply` arquiva (não deleta).
   - `archive` move para `_archive/` (recuperável), nunca deleta.
   - `<ref>` ambíguo em qualquer mutação aborta com erro em vez de adivinhar.
+  - `move`/`rename` abortam se o nome de destino já pertence a outra nota (sem sobrescrever).
 
 ### US-032 — Toda tool nova vem com testes
 **Como** mantenedor **quero** que cada tool tenha testes `node:test` com vault temporário **para** que a suíte fique verde e sem mocks.

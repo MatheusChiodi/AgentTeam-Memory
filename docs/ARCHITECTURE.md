@@ -1,7 +1,8 @@
 # AgentTeam-Memory — Arquitetura
 
 > Documento de referência da arquitetura do CLI de memória do `memory-team`.
-> Estado: descreve a **Fase 0** (já entregue) e especifica a **expansão** (10 features, 20 tools).
+> Estado: **expansão entregue** — 10 features e 20 tools novas implementadas, testadas (suíte 100/100)
+> e revisadas, sobre os 5 comandos base. Total: **25 comandos**.
 > Fonte da verdade do código: `memory-team/{lib.mjs,notes.mjs,memory.mjs,commands/}`.
 
 ---
@@ -222,15 +223,15 @@ diffável, sem destruir campos que não conhecem.
 | # | Feature | Tools | Status |
 | --- | --- | --- | --- |
 | **F1** | Arquitetura modular extensível de comandos (registry auto-discovery) | — (infra: dispatcher + registry + `_ctx`) | ✅ Fase 0 |
-| **F2** | Navegação e leitura de notas | `list`, `show`, `recent` | planejada |
-| **F3** | Gestão de taxonomia de tags | `tags`, `tag`, `retag` | planejada |
-| **F4** | Grafo de conhecimento (wikilinks) | `backlinks`, `links`, `graph`, `orphans` | planejada |
-| **F5** | Analytics e relatórios do vault | `stats`, `timeline` | planejada |
-| **F6** | Validação / lint do vault | `validate` | planejada |
-| **F7** | Detecção de duplicatas e limpeza | `dedupe`, `prune` | planejada |
-| **F8** | Ciclo de vida de notas | `archive`, `move`, `rename` | planejada |
-| **F9** | Backup e portabilidade | `export`, `import` | planejada |
-| **F10** | Modo de saída estruturada JSON (`--json` transversal) | todas as tools de leitura | ✅ iniciada na Fase 0 |
+| **F2** | Navegação e leitura de notas | `list`, `show`, `recent` | ✅ entregue |
+| **F3** | Gestão de taxonomia de tags | `tags`, `tag`, `retag` | ✅ entregue |
+| **F4** | Grafo de conhecimento (wikilinks) | `backlinks`, `links`, `graph`, `orphans` | ✅ entregue |
+| **F5** | Analytics e relatórios do vault | `stats`, `timeline` | ✅ entregue |
+| **F6** | Validação / lint do vault | `validate` | ✅ entregue |
+| **F7** | Detecção de duplicatas e limpeza | `dedupe`, `prune` | ✅ entregue |
+| **F8** | Ciclo de vida de notas | `archive`, `move`, `rename` | ✅ entregue |
+| **F9** | Backup e portabilidade | `export`, `import` | ✅ entregue |
+| **F10** | Modo de saída estruturada JSON (`--json` transversal) | todas as tools de leitura | ✅ entregue |
 
 ### F1 — Arquitetura modular extensível (entregue)
 
@@ -272,9 +273,10 @@ há erros — pluga em CI/hook. `--all` valida todos os projetos.
 
 ### F7 — Duplicatas e limpeza
 
-`dedupe` detecta notas quase-idênticas (mesmo título/slug, summary ou corpo muito similar) e
-reporta grupos; `prune` remove ruído (notas vazias, rascunhos, órfãs antigas) em **dry-run por
-padrão** — só apaga com `--apply`. Segurança: nada destrutivo sem flag explícita.
+`dedupe` detecta notas quase-idênticas (mesmo título/slug ou summary igual) e reporta grupos;
+`prune` acha ruído (notas vazias ou ainda no placeholder do template) em **dry-run por padrão** —
+com `--apply` **arquiva** os candidatos para `_archive/` (não deleta). Segurança: nada sai das
+buscas sem flag explícita e nada é destruído (recuperável via `archive --restore`).
 
 ### F8 — Ciclo de vida de notas
 
@@ -304,30 +306,32 @@ consistente, habilitando consumo programático (CI, outros agentes, scripts).
 
 | # | Tool | Assinatura | Feature |
 | --- | --- | --- | --- |
-| 1 | `list` | `list [--type t][--tag x][--agent a][--project p][--since YYYY-MM-DD][--limit n][--archived][--json]` | F2 |
+| 1 | `list` | `list [--type t][--tag x][--agent a][--project p][--since YYYY-MM-DD][--limit n][--archived][--all][--json]` | F2 |
 | 2 | `show` | `show <ref> [--json]` | F2 |
-| 3 | `recent` | `recent [n] [--json]` | F2 |
+| 3 | `recent` | `recent [n] [--all] [--json]` | F2 |
 | 4 | `tags` | `tags [--all] [--json]` | F3 |
-| 5 | `tag` | `tag <ref> [--add "a,b"] [--remove "c,d"]` | F3 |
-| 6 | `retag` | `retag <old> <new> [--all]` | F3 |
-| 7 | `backlinks` | `backlinks <ref> [--json]` | F4 |
-| 8 | `links` | `links <ref> [--json]` | F4 |
-| 9 | `graph` | `graph [--json]`  (saída Mermaid) | F4 |
-| 10 | `orphans` | `orphans [--json]` | F4 |
+| 5 | `tag` | `tag <ref> [--add "a,b"] [--remove "c,d"] [--json]` | F3 |
+| 6 | `retag` | `retag <old> <new> [--all] [--json]` | F3 |
+| 7 | `backlinks` | `backlinks <ref> [--all] [--json]` | F4 |
+| 8 | `links` | `links <ref> [--all] [--json]` | F4 |
+| 9 | `graph` | `graph [--all] [--json]`  (saída Mermaid) | F4 |
+| 10 | `orphans` | `orphans [--all] [--json]` | F4 |
 | 11 | `stats` | `stats [--all] [--json]` | F5 |
-| 12 | `timeline` | `timeline [--since d] [--limit n] [--json]` | F5 |
+| 12 | `timeline` | `timeline [--since YYYY-MM-DD] [--limit n] [--all] [--json]` | F5 |
 | 13 | `validate` | `validate [--all] [--json]`  (exit 1 se houver erros) | F6 |
-| 14 | `dedupe` | `dedupe [--json]` | F7 |
-| 15 | `prune` | `prune [--apply] [--json]`  (dry-run por padrão) | F7 |
+| 14 | `dedupe` | `dedupe [--all] [--json]` | F7 |
+| 15 | `prune` | `prune [--apply] [--all] [--json]`  (dry-run por padrão) | F7 |
 | 16 | `archive` | `archive <ref> [--restore]` | F8 |
 | 17 | `move` | `move <ref> <targetProject>` | F8 |
 | 18 | `rename` | `rename <ref> <novo titulo>` | F8 |
 | 19 | `export` | `export [--format json\|md] [--out file] [--all]` | F9 |
 | 20 | `import` | `import <file> [--project p]` | F9 |
 
-> Tools que mutam (5, 6, 15, 16, 17, 18, 20) devem reescrever notas via `formatNote` para
-> preservar frontmatter desconhecido, e em caso de `<ref>` ambíguo (vários matches) devem
-> reportar a ambiguidade em vez de adivinhar.
+> Tools que mutam (5, 6, 15, 16, 17, 18, 20) reescrevem notas via `formatNote` para preservar
+> frontmatter desconhecido. Em caso de `<ref>` ambíguo (vários matches) reportam a ambiguidade
+> em vez de adivinhar. `move` e `rename` ainda têm **guarda anti-clobber**: se o nome de destino
+> já pertence a outra nota, abortam com erro em vez de sobrescrever (correção da revisão adversarial,
+> Fase 3 — evitava perda silenciosa de dados).
 
 ---
 
