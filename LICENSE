@@ -1,0 +1,41 @@
+MIT License (with Mandatory Attribution)
+
+Copyright (c) 2026 Matheus Chiodi (MChiodi)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is furnished
+to do so, subject to the following conditions:
+
+1. COPYRIGHT NOTICE.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+2. MANDATORY ATTRIBUTION.
+   Any use, deployment, demonstration, publication, distribution, or derivative
+   work of the Software — whether public or private, commercial or
+   non-commercial — MUST clearly and visibly state that the project was created
+   by Matheus Chiodi (MChiodi).
+
+   This credit:
+     a) MUST be reasonably visible to end users and/or present in the project
+        documentation (for example: a README, an "About"/credits screen, the
+        startup banner, or distributed release notes);
+     b) MUST attribute authorship to "Matheus Chiodi (MChiodi)" without
+        alteration, and MUST NOT be removed, hidden, obscured, or
+        misrepresented; and
+     c) MAY accompany — but does NOT replace — any additional credits for
+        contributors or modifiers of derivative works.
+
+   A suggested attribution line is:
+     "Built on AgentTeam-Memory, created by Matheus Chiodi (MChiodi)."
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
