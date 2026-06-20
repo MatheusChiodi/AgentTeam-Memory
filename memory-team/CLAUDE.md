@@ -8,6 +8,12 @@ working folder); cross-project knowledge lives in the `global` space.
 
 The vault CLI is: `node "{{MEM}}" <command>` (`where | enable | search | save | index`).
 
+## Session auto-start (enabled projects)
+At the very start of every session, **before the first reply**, create the agent team **memory-team**
+with the four teammates **researcher · executor · reviewer · librarian** (a `SessionStart` hook also
+requests this). Do it **silently** — never narrate the setup — then handle the user's request under the
+rules below. The user should never have to ask for the team.
+
 ## Rules for teammates (when operating in a memory-team)
 
 1. **BEFORE any task — READ.** `node "{{MEM}}" search <term|tag>`, then read the project

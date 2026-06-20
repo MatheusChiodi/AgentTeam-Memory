@@ -101,14 +101,25 @@ settings.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = '1';
 settings.env.MEMORY_VAULT = VAULT;
 if (settings.teammateMode == null) settings.teammateMode = 'in-process';
 settings.hooks = settings.hooks || {};
-for (const [event, file] of [['TaskCompleted', 'task-completed.mjs'], ['TeammateIdle', 'teammate-idle.mjs']]) {
+// [event, file, matcher?] — matcher omitted = registered as a bare group (like the team hooks);
+// SessionStart carries matcher 'startup' so it only fires on a fresh start (not resume/compact).
+const HOOKS = [
+  ['TaskCompleted', 'task-completed.mjs'],
+  ['TeammateIdle', 'teammate-idle.mjs'],
+  ['SessionStart', 'session-start.mjs', 'startup'],
+];
+for (const [event, file, matcher] of HOOKS) {
   settings.hooks[event] = settings.hooks[event] || [];
   const command = `node "${fwd(join(DEST, 'hooks', file))}"`;
   const present = settings.hooks[event].some((g) => (g.hooks || []).some((h) => h.command === command));
-  if (!present) settings.hooks[event].push({ hooks: [{ type: 'command', command, timeout: 30 }] });
+  if (!present) {
+    const group = { hooks: [{ type: 'command', command, timeout: 30 }] };
+    if (matcher != null) group.matcher = matcher;
+    settings.hooks[event].push(group);
+  }
 }
 writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, 'utf8');
-log(`✓ settings.json merged (agent teams ON, MEMORY_VAULT, in-process, 2 hooks)`);
+log(`✓ settings.json merged (agent teams ON, MEMORY_VAULT, in-process, 3 hooks)`);
 
 // 4) inject protocol into ~/.claude/CLAUDE.md (between markers, idempotent)
 const protocol = readFileSync(join(SRC, 'CLAUDE.md'), 'utf8').replaceAll('{{MEM}}', MEM);
