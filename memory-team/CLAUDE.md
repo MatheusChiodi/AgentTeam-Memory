@@ -32,9 +32,11 @@ outcome, not the process.
 - No teaching, no `Insight` blocks, no listing options you won't take, no courtesy filler.
 - Reasoning, sources and trade-offs go **into the note body** — not into the chat.
 
-## Enable memory enforcement for a project (opt-in)
-Run once at the project root: `node "{{MEM}}" enable`. This writes a `.memory-team` marker so the
-hooks enforce the discipline here. Without it the hooks stay fail-open (they never block).
+## Enable memory enforcement (opt-in)
+- **Per project:** run once at the root `node "{{MEM}}" enable` — writes a `.memory-team` marker so the
+  hooks enforce the discipline here. Without it the hooks stay fail-open (they never block).
+- **Globally (every project):** run `node install.mjs --enforce-global` once, or set `MEMORY_ENFORCE_GLOBAL=1`.
+  Then the hooks enforce everywhere with no per-project marker. Revert by deleting `~/.claude/memory-team/.enforce-global`.
 
 ## Atomic note schema
 ```markdown

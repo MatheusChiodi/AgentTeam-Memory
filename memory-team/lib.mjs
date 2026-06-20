@@ -11,12 +11,15 @@
 //   - vault root: env MEMORY_VAULT, else DEFAULT_VAULT.
 //   - project:    env MEMORY_PROJECT, else slug(basename(cwd)).
 //   - enabled:    a project is "enabled" (hooks enforce) iff a `.memory-team`
-//                 marker file exists at its root.
+//                 marker file exists at its root, OR enforcement is global
+//                 (env MEMORY_ENFORCE_GLOBAL=1, or a `.enforce-global` marker
+//                 next to this module — written by `install.mjs --enforce-global`).
 
 import {
   readdirSync, readFileSync, existsSync, mkdirSync, statSync,
 } from 'node:fs';
-import { join, basename } from 'node:path';
+import { join, basename, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
 
 // Universal default: lives next to the Claude Code config, works on any machine.
@@ -58,8 +61,17 @@ export function projectDir(cwd = process.cwd()) {
   return cwd.replace(/\\/g, '/');
 }
 
+// Global enforcement marker lives next to this module, so it follows the install
+// (works under any --home / sandbox), independent of homedir().
+const GLOBAL_ENFORCE_MARKER = join(dirname(fileURLToPath(import.meta.url)), '.enforce-global');
+
+// True when enforcement is on for EVERY project (no per-project marker needed).
+export function enforceGlobal() {
+  return process.env.MEMORY_ENFORCE_GLOBAL === '1' || existsSync(GLOBAL_ENFORCE_MARKER);
+}
+
 export function isEnabled(cwd = process.cwd()) {
-  return existsSync(join(cwd, '.memory-team'));
+  return enforceGlobal() || existsSync(join(cwd, '.memory-team'));
 }
 
 export function partition(root, project) {

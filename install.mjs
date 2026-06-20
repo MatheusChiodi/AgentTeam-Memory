@@ -6,6 +6,7 @@
 //   node install.mjs                       # install into os.homedir() + default vault
 //   node install.mjs --home <dir>          # override home (useful for sandbox testing)
 //   node install.mjs --vault <dir>         # override central vault path
+//   node install.mjs --enforce-global      # hooks enforce in EVERY project (no per-project marker)
 //
 // What it does:
 //   - copies lib.mjs/memory.mjs/hooks -> <home>/.claude/memory-team/
@@ -40,6 +41,7 @@ const ts = () => {
 
 const HOME = fwd(arg('home', homedir()));
 const VAULT = fwd(arg('vault', DEFAULT_VAULT));
+const ENFORCE_GLOBAL = process.argv.includes('--enforce-global');
 const CLAUDE = join(HOME, '.claude');
 const DEST = join(CLAUDE, 'memory-team');
 const AGENTS = join(CLAUDE, 'agents');
@@ -58,6 +60,19 @@ mkdirSync(join(DEST, 'commands'), { recursive: true });
 for (const c of readdirSync(join(SRC, 'commands'))) copyFileSync(join(SRC, 'commands', c), join(DEST, 'commands', c));
 for (const h of readdirSync(join(SRC, 'hooks'))) copyFileSync(join(SRC, 'hooks', h), join(DEST, 'hooks', h));
 log(`✓ runtime -> ${fwd(DEST)} (lib + notes + cli + commands + hooks)`);
+
+// 1b) optional: GLOBAL enforcement marker — hooks enforce in every project, no per-project marker.
+const enforceMarker = join(DEST, '.enforce-global');
+if (ENFORCE_GLOBAL) {
+  writeFileSync(enforceMarker,
+    `# memory-team GLOBAL enforcement.\n`
+    + `# While this file exists, the TaskCompleted/TeammateIdle hooks enforce in EVERY project\n`
+    + `# (a per-project .memory-team marker is no longer required). Delete this file to revert.\n`
+    + `enabled: ${new Date().toISOString().slice(0, 10)}\n`, 'utf8');
+  log(`✓ GLOBAL enforcement ON -> ${fwd(enforceMarker)}`);
+} else if (existsSync(enforceMarker)) {
+  log(`• GLOBAL enforcement already ON (${fwd(enforceMarker)}); pass nothing to keep, delete the file to revert.`);
+}
 
 // 2) copy agents with {{MEM}} resolved
 let nAgents = 0;
@@ -144,4 +159,10 @@ try {
 log(`✓ central vault -> ${VAULT}`);
 
 log('\nDone. Open a NEW terminal in ANY project and run `claude` — agent teams + memory are active.');
-log(`Enable enforcement per project with:  node "${MEM}" enable`);
+if (ENFORCE_GLOBAL || existsSync(enforceMarker)) {
+  log('Enforcement is GLOBAL: every project enforces memory in agent teams.');
+  log(`Revert with:  del "${fwd(enforceMarker)}"   (or rm on *nix)`);
+} else {
+  log(`Enable enforcement per project with:  node "${MEM}" enable`);
+  log(`Or make it global with:  node install.mjs --enforce-global`);
+}
