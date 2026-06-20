@@ -24,3 +24,4 @@ Principles:
 - **On communication:** `SendMessage` + `node "{{MEM}}" save communication "<subject>" --from executor --to <other> --summary "..."`.
 - **Before idling:** `node "{{MEM}}" save state executor --summary "..."` and edit the file.
 - Every note has a `summary` in frontmatter. You only edit files with `--agent executor`.
+- **Output discipline:** vault work in full, terminal reply terse — result + note path, no narration/insights. Depth lives in the note, not the chat.

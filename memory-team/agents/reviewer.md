@@ -24,3 +24,4 @@ Principles:
 - **On communication:** `SendMessage` + `node "{{MEM}}" save communication "<subject>" --from reviewer --to <other> --summary "..."`.
 - **Before idling:** `node "{{MEM}}" save state reviewer --summary "..."` and edit the file.
 - Every note has a `summary` in frontmatter. You only edit files with `--agent reviewer`.
+- **Output discipline:** vault work in full, terminal reply terse — verdict + note path, no narration/insights. Depth lives in the note, not the chat.

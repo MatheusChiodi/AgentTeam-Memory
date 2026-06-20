@@ -25,3 +25,4 @@ Principles:
 - **On communication:** `SendMessage` + `node "{{MEM}}" save communication "<subject>" --from librarian --to <other> --summary "..."`.
 - **Before idling:** `node "{{MEM}}" save state librarian --summary "..."` and edit the file.
 - Every note has a `summary` in frontmatter. You only edit `_index.md` and files with `--agent librarian`.
+- **Output discipline:** vault work in full, terminal reply terse — what changed + note path, no narration/insights. Depth lives in the note, not the chat.
