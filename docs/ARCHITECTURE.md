@@ -1,9 +1,12 @@
 # AgentTeam-Memory — Arquitetura
 
 > Documento de referência da arquitetura do CLI de memória do `memory-team`.
-> Estado: **expansão entregue** — 10 features e 20 tools novas implementadas, testadas (suíte 100/100)
-> e revisadas, sobre os 5 comandos base. Total: **25 comandos**.
-> Fonte da verdade do código: `memory-team/{lib.mjs,notes.mjs,memory.mjs,commands/}`.
+> Estado: **Fase 2 entregue** — +10 features (F11–F20), +9 tools de registry + 1 statusline
+> standalone sobre os 25 comandos base → **34 comandos + statusline**; suíte **232/232** (era 100/100).
+> A base (Fase 0/1) somava 25 comandos / suíte 100/100.
+> Detalhamento da Fase 2: [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md) ·
+> [`USER-STORIES-PHASE-2.md`](./USER-STORIES-PHASE-2.md).
+> Fonte da verdade do código: `memory-team/{lib.mjs,notes.mjs,memory.mjs,statusline.mjs,commands/}`.
 
 ---
 
@@ -41,10 +44,13 @@ flowchart LR
     T4["librarian"]
   end
   LEAD -->|SendMessage| T1 & T2 & T3 & T4
-  T1 & T2 & T3 & T4 -->|"node memory.mjs save/search"| CLI[("memory CLI")]
+  T1 & T2 & T3 & T4 -->|"node memory.mjs save/search<br/>(34 comandos)"| CLI[("memory CLI")]
   CLI --> VAULT[("Vault Obsidian<br/>particionado por projeto")]
   VAULT -.->|"LER antes de agir"| T1 & T2 & T3 & T4
   HOOKS["Hooks opt-in<br/>TaskCompleted · TeammateIdle"] -.->|enforce| CLI
+  CC["Claude Code"] -->|"payload via stdin<br/>rate_limits · context_window · cost"| SL["statusline.mjs<br/>(standalone, por turno)"]
+  VAULT -.->|"#notas (read-only barato)"| SL
+  SL -->|"1 linha"| BAR["Claude Code status bar"]
 ```
 
 ---
@@ -175,18 +181,37 @@ dispatcher e viram `exit 1` — use isso só para falhas inesperadas, não para 
 ```
 <VAULT>/                                   # MEMORY_VAULT ou ~/.claude/memory-vault
 ├── _index.md                              # MOC mestre (lista projetos + contagem)
+├── config.json                            # Fase 2 (F16) — config central; números tipados
+│                                          #   (ex.: limiares warn/danger do statusline)
+├── _templates/   <nome>.md                # Fase 2 (F17) — templates de nota do vault
+├── _snapshots/   <timestamp>/             # Fase 2 (F19) — checkpoints datados do vault
 ├── projects/
 │   └── <project>/                         # slug(basename(cwd)) ou MEMORY_PROJECT
 │       ├── _index.md                      # MOC do projeto (só o librarian regenera)
-│       ├── memory/   YYYY-MM-DD-<slug>.md # memory | decision | learning
+│       ├── memory/   YYYY-MM-DD-<slug>.md # memory | decision | learning (+ tags usage/digest, F12/F14)
 │       ├── board/    YYYY-MM-DD-<from>-to-<to>.md   # communication
 │       ├── agents/   <name>.md            # state do teammate (sobrevive à sessão)
 │       ├── tasks/                         # (reservado p/ artefatos de task)
+│       ├── _snapshots/                    # Fase 2 (F19) — checkpoints por projeto
 │       └── _archive/                      # notas arquivadas (F8) — fora de buscas por padrão
 └── global/                                # conhecimento cross-project
     ├── memory/
     └── board/
 ```
+
+A Fase 2 acrescenta artefatos de serviço **sem** alterar a estrutura existente:
+
+- **`config.json`** vive na **raiz do vault** (não numa partição) — é cross-project por natureza
+  (limiares do statusline, formato de data, limite de contexto custom). Não é nota: `config set` o
+  escreve diretamente, sem passar por `formatNote`.
+- **`_templates/`** (F17) guarda os esqueletos de nota do vault, somados aos embutidos no código.
+- **`_snapshots/`** (F19) guarda checkpoints datados — cópia direta dos bytes das notas (sem
+  serializar via `export`), com a recursão sobre `_snapshots` explicitamente excluída.
+
+Diretórios iniciados por `_` continuam sendo de serviço: `collectNotes` percorre só as bases
+conhecidas (`memory/`, `board/`, `agents/`) e **não** inclui `config.json`, `_templates/` nem
+`_snapshots/`. As notas de tag `usage`/`digest` são notas `memory` normais (gravadas por
+`usage --save` / `digest --save`) — aparecem em buscas e no grafo, distinguidas só pela tag.
 
 ### Tipos de nota e destino (`save`)
 
@@ -297,9 +322,36 @@ portável entre máquinas e versionável fora do Obsidian.
 dispatcher (Fase 0); a expansão exige que **toda** tool de leitura popule `data` de forma
 consistente, habilitando consumo programático (CI, outros agentes, scripts).
 
+### Fase 2 — F11 a F20
+
+Observabilidade em tempo real e integração nativa com o Claude Code. Detalhamento completo (payload,
+fallbacks, contratos) em [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md).
+
+| # | Feature | Tool | Em uma frase |
+| --- | --- | --- | --- |
+| **F11** ⭐ | Uso de plano/contexto/custo em tempo real | `statusline.mjs` (standalone) | Rodapé do Claude Code mostra `plan · ctx · $ · mem` por turno. |
+| **F12** | Ledger de uso/custo | `usage` | Agrega custo/tokens dos transcripts por dia e projeto. |
+| **F13** | Live tail do vault | `watch` | Imprime cada nota nova ao vivo via `fs.watch`. |
+| **F14** | Digest de sessão | `digest` | Sumário em markdown da janela, agrupado por agente/tipo. |
+| **F15** | Health check | `doctor` | Diagnostica vault, settings, hooks e statusline. |
+| **F16** | Configuração central | `config` | Lê/grava preferências em `config.json` do vault. |
+| **F17** | Templates de nota | `template` | Cria nota a partir de esqueleto com placeholders. |
+| **F18** | Pin / destaque | `pin` | Marca notas-chave para ordenarem antes nas buscas. |
+| **F19** | Snapshot / checkpoint | `snapshot` | Congela e restaura o vault por cópia direta de bytes. |
+| **F20** | Sugestão de wikilinks | `relate` | Rankeia notas similares e adensa o grafo com `--apply`. |
+
+**F11 (a feature-estrela)** é a única que **não** é um comando do registry: `statusline.mjs` é um
+**entrypoint standalone**. O Claude Code entrega o estado da sessão como **JSON via stdin** a cada
+refresh, e o script emite **uma única linha** no rodapé com o uso do plano (`rate_limits` 5h/7d), a %
+da janela de contexto (`context_window`) e o custo USD da sessão (`cost.total_cost_usd`) — exatamente
+o que o `/usage` mostra, agora passivo. É standalone por três razões: roda a **cada refresh** (não
+pode pagar `loadCommands()` de ~34 módulos por turno), **precisa de stdin** (o `ctx` dos comandos não
+expõe stdin) e emite **1 linha** (não o shape `{ lines, data }` do registry). Degrada e **sai 0** em
+qualquer erro, jamais derrubando a render.
+
 ---
 
-## 7. As 20 Tools (assinaturas canônicas)
+## 7. As 34 Tools + statusline (assinaturas canônicas)
 
 > Convenção: `<ref>` é uma referência frouxa resolvida por `resolveNotes` (basename exato →
 > fragmento de slug → substring de nome/summary). Flags de filtro são opcionais e combináveis.
@@ -332,6 +384,40 @@ consistente, habilitando consumo programático (CI, outros agentes, scripts).
 > em vez de adivinhar. `move` e `rename` ainda têm **guarda anti-clobber**: se o nome de destino
 > já pertence a outra nota, abortam com erro em vez de sobrescrever (correção da revisão adversarial,
 > Fase 3 — evitava perda silenciosa de dados).
+
+### As 9 tools da Fase 2 (F12–F20) — complemento
+
+> Mesmo contrato canônico da base (`{ name, summary, usage, run(ctx) }`), auto-descobertas pelo
+> registry. Tools de leitura populam `data` para o `--json` transversal (F10); as que mutam
+> reescrevem via `formatNote`. Detalhamento em [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md).
+
+| # | Tool | Assinatura | Feature | Muta? |
+| --- | --- | --- | --- | --- |
+| 26 | `usage` | `usage [--since YYYY-MM-DD] [--limit n] [--save] [--json]` | F12 | só com `--save` (nota) |
+| 27 | `watch` | `watch [--all]`  (stream contínuo) | F13 | não |
+| 28 | `digest` | `digest [--since YYYY-MM-DD] [--save] [--json]` | F14 | só com `--save` (nota) |
+| 29 | `doctor` | `doctor [--json]`  (exit 1 se algum `✗`) | F15 | não |
+| 30 | `config` | `config list \| get <k> \| set <k> <v> [--json]` | F16 | `set` → `config.json` |
+| 31 | `template` | `template list \| template <nome> "<título>" [--json]` | F17 | cria nota |
+| 32 | `pin` | `pin <ref> [--off] \| pin --list [--json]` | F18 | sim (frontmatter) |
+| 33 | `snapshot` | `snapshot [--list] [--restore <id>] [--json]` | F19 | cria / `--restore` destrutivo |
+| 34 | `relate` | `relate <ref> [--apply] [--json]` | F20 | só com `--apply` (`related`) |
+
+> `watch` (stream contínuo) fica **fora** do contrato `lines/data` — exceção documentada, análoga ao
+> statusline. `snapshot --restore` é destrutivo: exige a flag explícita e faz um snapshot de segurança
+> antes (invariante não-destrutivo). `usage`/`digest` são read-only por padrão e só persistem nota com
+> `--save`; `relate` só toca `related` com `--apply`.
+
+### `statusline.mjs` — entrypoint standalone (F11, fora do registry)
+
+| Entrypoint | Assinatura | Feature | Muta? |
+| --- | --- | --- | --- |
+| ⭐ `statusline.mjs` | `statusline.mjs [--install \| --uninstall \| --demo]` | F11 | só `--install`/`--uninstall` (bloco `statusLine` do `settings.json`) |
+
+Não é uma tool de registry: lê o payload do Claude Code via **stdin** e emite **1 linha** no rodapé
+(gatilho, entrada e saída próprios — ver §6, seção 2 do doc da Fase 2). Os subcomandos de instalação
+fazem **merge não-destrutivo e idempotente** em `~/.claude/settings.json` (espelhando o `install.mjs`
+da base); `--demo` roda o pipeline com um payload de exemplo embutido, sem precisar do Claude Code.
 
 ---
 
@@ -386,3 +472,11 @@ flowchart LR
 6. **Round-trip estável.** Mutações reescrevem via `formatNote` preservando campos desconhecidos.
 7. **Fail-open nos hooks, fail-loud no CLI.** Hooks nunca travam o time por bug; o CLI sinaliza
    erro claramente.
+8. **Tempo real é barato e à prova de falha (Fase 2).** As features ao vivo (statusline, watch) rodam
+   em uma passada e sem dependência nova. O statusline consome o payload já pronto (`rate_limits`,
+   `context_window`, `cost`) e só toca o transcript no fallback — e, mesmo aí, lê só a cauda; nunca
+   usa `--all`.
+9. **O statusline nunca derruba a render do Claude Code (Fase 2).** Qualquer erro (stdin vazio, JSON
+   inválido, transcript ausente, exceção) degrada para um fallback curto e **sai 0** — nunca lança
+   para o Claude Code, nunca trava. É a única regra que sobrepõe o "fail-loud no CLI" (princípio 7),
+   por estar no caminho crítico da UI.
