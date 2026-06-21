@@ -1,7 +1,7 @@
 // roadmap — turn `decision` notes into a timeline grouped by month, to communicate
 // the project's direction. Collects type:decision (+ learning with --include
 // learning), sorts by created, groups by YYYY-MM, emits markdown `## YYYY-MM` with
-// `título — summary` bullets. `--save` persists it as a memory note (tag `roadmap`).
+// `title — summary` bullets. `--save` persists it as a memory note (tag `roadmap`).
 import { collectNotes, saveNote } from '../notes.mjs';
 
 export default {
@@ -33,7 +33,7 @@ export default {
     const data = { months };
 
     const body = [];
-    if (!months.length) body.push('(nenhuma decisão)');
+    if (!months.length) body.push('(no decisions)');
     for (const { month, items } of months) {
       body.push(`## ${month}`);
       for (const it of items) body.push(`- ${it.title} — ${it.summary}`.trimEnd());
@@ -45,14 +45,14 @@ export default {
       const { file } = saveNote(ROOT, PROJECT, {
         type: 'memory',
         title: 'Roadmap',
-        summary: 'Roadmap das decisões por mês.',
+        summary: 'Roadmap of decisions by month.',
         tags: ['roadmap'],
         related,
         agent: opt.agent || 'unknown',
         body: body.join('\n'),
       });
       data.path = file;
-      return { ok: true, lines: [`# roadmap salvo (${file})`, '', ...body], data };
+      return { ok: true, lines: [`# roadmap saved (${file})`, '', ...body], data };
     }
 
     return { ok: true, lines: ['# Roadmap', '', ...body], data };

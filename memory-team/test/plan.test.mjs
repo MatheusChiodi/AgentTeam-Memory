@@ -17,14 +17,14 @@ test('plan: creates a memory note tagged plan with the fixed sections', async ()
   assert.match(res.data.path, /projects\/planp\/memory\/.*-ship-the-feature\.md/);
   const raw = readFileSync(`${root}/${res.data.path}`, 'utf8');
   assert.match(raw, /tags: \[plan\]/);
-  assert.match(raw, /## Objetivo/);
-  assert.match(raw, /## Passos/);
-  assert.match(raw, /## Riscos/);
-  assert.match(raw, /## Pronto quando/);
+  assert.match(raw, /## Goal/);
+  assert.match(raw, /## Steps/);
+  assert.match(raw, /## Risks/);
+  assert.match(raw, /## Done when/);
   assert.match(raw, /ship the feature/);
 });
 
-test('plan: --steps become open checkboxes in Passos', async () => {
+test('plan: --steps become open checkboxes in Steps', async () => {
   const res = await run('plan', { pos: ['build x'], opt: { steps: 'design;code;test' }, project: 'planp', root });
   assert.deepEqual(res.data.steps, ['design', 'code', 'test']);
   const raw = readFileSync(`${root}/${res.data.path}`, 'utf8');
@@ -51,7 +51,7 @@ test('plan: empty --steps yields a placeholder checkbox, no steps', async () => 
   const res = await run('plan', { pos: ['no steps plan'], project: 'plann', root });
   assert.deepEqual(res.data.steps, []);
   const raw = readFileSync(`${root}/${res.data.path}`, 'utf8');
-  assert.match(raw, /- \[ \] \(defina os passos\)/);
+  assert.match(raw, /- \[ \] \(define the steps\)/);
 });
 
 test('plan: slug collision suffixes the filename (-2)', async () => {

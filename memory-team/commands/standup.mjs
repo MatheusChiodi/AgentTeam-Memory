@@ -1,6 +1,6 @@
 // standup — cross-agent daily: what each agent produced in a time window.
 // Groups window notes (created >= since) by agent; per agent reports deliverables
-// (`tipo: título`), a count, and the most recent known `state` note. Lets the lead
+// (`type: title`), a count, and the most recent known `state` note. Lets the lead
 // run a "daily" without asking anyone. Window default = today (injectable via
 // --today for deterministic tests).
 import { collectNotes } from '../notes.mjs';
@@ -42,14 +42,14 @@ export default {
       .sort((a, b) => b.count - a.count || a.agent.localeCompare(b.agent));
 
     if (!data.length) {
-      return { ok: true, lines: [`nenhum agente ativo na janela (since ${since})`], data };
+      return { ok: true, lines: [`no agent active in the window (since ${since})`], data };
     }
 
-    const lines = [`# standup (since ${since}) — ${data.length} agente(s)`, ''];
+    const lines = [`# standup (since ${since}) — ${data.length} agent(s)`, ''];
     for (const a of data) {
       lines.push(`## ${a.agent} (${a.count})`);
       for (const item of a.items) lines.push(`- ${item}`);
-      if (a.lastState) lines.push(`- último estado: ${a.lastState.title} — ${a.lastState.summary}`.trimEnd());
+      if (a.lastState) lines.push(`- last state: ${a.lastState.title} — ${a.lastState.summary}`.trimEnd());
       lines.push('');
     }
     return { ok: true, lines, data };

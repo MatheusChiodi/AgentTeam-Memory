@@ -65,5 +65,5 @@ test('recap: empty window is a valid recap, exit 0', async () => {
   assert.equal(res.ok, true);
   assert.equal(res.data.total, 0);
   assert.deepEqual(res.data.bullets, []);
-  assert.match(res.lines.join('\n'), /nada na janela/);
+  assert.match(res.lines.join('\n'), /nothing in the window/);
 });

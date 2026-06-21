@@ -17,7 +17,7 @@ let root;
 before(() => {
   root = makeVault();
   seedNote(root, PROJ, 'memory', 'hub.md',
-    { type: 'memory', project: PROJ, agent: 'x', summary: 's', tags: ['graph', 'cli'], related: ['[[linked]]'], created: '2026-01-01' }, 'corpo do hub');
+    { type: 'memory', project: PROJ, agent: 'x', summary: 's', tags: ['graph', 'cli'], related: ['[[linked]]'], created: '2026-01-01' }, 'hub body');
   seedNote(root, PROJ, 'memory', 'linked.md',
     { type: 'memory', project: PROJ, agent: 'x', summary: 's', tags: ['misc'], created: '2026-01-02' }, 'b');
   seedNote(root, PROJ, 'memory', 'sib-tag.md',

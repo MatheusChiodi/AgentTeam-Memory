@@ -61,7 +61,7 @@ test('glossary: empty vault → empty glossary, exit 0', async () => {
   const res = await run('glossary', { project: 'glossary-empty', root });
   assert.equal(res.ok, true);
   assert.deepEqual(res.data, []);
-  assert.match(res.lines.join('\n'), /glossário vazio/);
+  assert.match(res.lines.join('\n'), /empty glossary/);
 });
 
 test('glossary: a term counts once per note even if repeated in the summary', async () => {

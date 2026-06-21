@@ -33,7 +33,7 @@ test('standup: groups by agent, counts, sorted by count desc', async () => {
   assert.equal(res.data.find((a) => a.agent === 'researcher').count, 1);
 });
 
-test('standup: items are `tipo: título` and lastState is the state note', async () => {
+test('standup: items are `type: title` and lastState is the state note', async () => {
   const res = await run('standup', { opt: { since: '2026-06-01', today: '2026-06-21' }, project: 'sup', root });
   const exec = res.data.find((a) => a.agent === 'executor');
   assert.ok(exec.items.includes('decision: a-dec'));
@@ -63,7 +63,7 @@ test('standup: empty window says no active agents, exit 0', async () => {
   const res = await run('standup', { opt: { since: '2026-12-01', today: '2026-12-31' }, project: 'sup', root });
   assert.equal(res.ok, true);
   assert.deepEqual(res.data, []);
-  assert.match(res.lines.join('\n'), /nenhum agente ativo/);
+  assert.match(res.lines.join('\n'), /no agent active in the window/);
 });
 
 test('standup: agent with no state note has lastState null', async () => {

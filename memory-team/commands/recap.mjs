@@ -25,7 +25,7 @@ function noteDate(n) {
   return '';
 }
 
-/** A dense bullet: `tipo: título` plus a short summary if one exists. */
+/** A dense bullet: `type: title` plus a short summary if one exists. */
 function bullet(n) {
   const type = n.fm.type || 'note';
   const head = `${type}: ${n.name}`;
@@ -61,7 +61,7 @@ export default {
       // Empty window is a valid recap, exit 0 — the agent learns "nothing happened".
       return {
         ok: true,
-        lines: [`# recap — ${where} — since ${since}`, '', 'nada na janela.'],
+        lines: [`# recap — ${where} — since ${since}`, '', 'nothing in the window.'],
         data,
       };
     }

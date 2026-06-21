@@ -1,139 +1,139 @@
-# 18 prompts para validação no projeto X
+# 18 prompts for validation in project X
 
-Prompts prontos para colar no **lead** (no `claude`, dentro do `<projeto X>`). Cada um exercita o
-agent team + o vault central de memória para **provar** que uma mudança faz o que deveria —
-observando comportamento real, não só lendo código. Troque as partes entre `<colchetes>` (a começar
-por `<project X>`). Os prompts estão em inglês (o time opera em inglês); a **explicação de cada um
-está em português**: diz **o que o prompt faz** e **como usa o time e a memória**.
+Ready-to-paste prompts for the **lead** (in `claude`, inside `<project X>`). Each one exercises the
+agent team + the central memory vault to **prove** that a change does what it should —
+observing real behavior, not just reading code. Swap the parts between `<brackets>` (starting
+with `<project X>`). The prompts are in English (the team operates in English); the **explanation of each one
+is in English**: it states **what the prompt does** and **how it uses the team and the memory**.
 
-> Lembrete: rode `node "<home>/.claude/memory-team/memory.mjs" enable` uma vez no `<projeto X>` para
-> os hooks passarem a impor a disciplina de memória ali (sem isso eles ficam fail-open, não bloqueiam).
-> Toda validação registra o veredito como `decision`/`learning` note vinculada à `--task <id>`.
+> Reminder: run `node "<home>/.claude/memory-team/memory.mjs" enable` once in `<project X>` so
+> the hooks start enforcing the memory discipline there (without it they stay fail-open, they don't block).
+> Every validation records the verdict as a `decision`/`learning` note linked to the `--task <id>`.
 
 ---
 
-## A. Validar a mudança
+## A. Validate the change
 
-### 1. Validar que a mudança faz o que deveria
+### 1. Validate that the change does what it should
 > Validate that `<change/feature>` in `<project X>` actually does what it should. The `researcher` first `search`es the vault for the acceptance criteria or the decision note behind it; the `reviewer` then exercises the real behavior (run it, trigger the path, observe the output) rather than just reading the code, and records the verdict as a `decision` note (pass/fail + evidence, `--task <id>`).
 
-**O que faz:** força a validação a observar o comportamento real contra o critério já registrado; o
-veredito com evidência fica como `decision` note pesquisável, não solto no chat.
+**What it does:** forces the validation to observe the real behavior against the already-recorded criterion; the
+verdict with evidence stays as a searchable `decision` note, not loose in the chat.
 
-### 2. Rodar e observar o app
+### 2. Run and observe the app
 > Run `<project X>` (`<dev/build command>`) and observe `<the flow/screen/endpoint>` end to end. The `reviewer` reports what actually happened versus what was expected, captures any console/runtime errors, and saves a `learning` note with the observed behavior and any gap. The `researcher` supplies the expected behavior from the vault.
 
-**O que faz:** valida executando de verdade e comparando observado vs esperado; o que foi visto fica
-registrado como `learning`, então a próxima sessão sabe o estado real do app sem re-rodar tudo.
+**What it does:** validates by actually running and comparing observed vs expected; what was seen stays
+recorded as a `learning`, so the next session knows the real state of the app without re-running everything.
 
-### 3. Validar contra requisitos / critérios de aceitação
+### 3. Validate against requirements / acceptance criteria
 > Validate `<feature>` in `<project X>` against its acceptance criteria. The `researcher` pulls the criteria from the vault (or restates them if missing and saves them as a `memory` note). The `reviewer` checks each criterion against real behavior, marks pass/fail per item, and records a `decision` note with the per-criterion verdict.
 
-**O que faz:** transforma critérios soltos em um checklist verificável item a item contra o
-comportamento real; o veredito por critério vira uma `decision` note auditável.
+**What it does:** turns loose criteria into a checklist verifiable item by item against the
+real behavior; the per-criterion verdict becomes an auditable `decision` note.
 
-### 4. Smoke test do caminho crítico
+### 4. Smoke test of the critical path
 > Smoke-test `<project X>`: run it and exercise the `<critical happy-path flow>` once, end to end. The `reviewer` confirms it loads, the main action works, and nothing throws; saves a short `learning` note with the result. If it breaks, `SendMessage` the `executor` with the exact failing step.
 
-**O que faz:** uma verificação rápida de que o caminho principal não está quebrado; o resultado fica
-registrado e, se falhar, o executor recebe o passo exato em vez de "não funciona".
+**What it does:** a quick check that the main path isn't broken; the result stays
+recorded and, if it fails, the executor gets the exact step instead of "it doesn't work".
 
-### 5. Validar correção de bug
+### 5. Validate a bug fix
 > The bug `<describe>` was fixed in `<project X>`. The `reviewer` reproduces the original failing scenario and confirms it no longer happens, then tries one adjacent input to ensure the fix isn't superficial. Record a `learning` note with the reproduction steps and the confirmation (with `--task <id>`).
 
-**O que faz:** valida o fix reencenando o cenário original e sondando uma variação próxima para
-descartar correção superficial; os passos de reprodução ficam guardados para regressões futuras.
+**What it does:** validates the fix by re-enacting the original scenario and probing a nearby variation to
+rule out a superficial fix; the reproduction steps stay saved for future regressions.
 
 ---
 
-## B. Regressão e estabilidade
+## B. Regression and stability
 
-### 6. Validar ausência de regressão
+### 6. Validate the absence of regression
 > After `<change>` in `<project X>`, validate that `<related features>` still work. The `researcher` lists the at-risk areas from the vault (what historically broke nearby); the `reviewer` exercises each one and records a `decision` note: which still work, which regressed. `SendMessage` the `executor` for any regression.
 
-**O que faz:** usa o histórico do vault para focar a regressão onde já quebrou antes, em vez de testar
-tudo; o resultado por área fica registrado e regressões vão direto ao executor.
+**What it does:** uses the vault's history to focus the regression where it broke before, instead of testing
+everything; the per-area result is recorded and regressions go straight to the executor.
 
-### 7. Validar casos de borda e entradas inválidas
+### 7. Validate edge cases and invalid inputs
 > Validate the edge handling of `<feature/endpoint>` in `<project X>`. The `reviewer` feeds boundary and invalid inputs (empty, oversized, malformed, unauthorized) and observes the real responses, then records a `learning` note listing each input and whether it was handled correctly. The `researcher` supplies the expected handling from any prior decision note.
 
-**O que faz:** valida fronteiras com entradas reais e compara contra o tratamento esperado já
-decidido; cada caso observado fica pesquisável para a próxima mudança no mesmo ponto.
+**What it does:** validates boundaries with real inputs and compares against the already-decided
+expected handling; each observed case stays searchable for the next change at the same point.
 
-### 8. Validar estado e dados após a operação
+### 8. Validate state and data after the operation
 > Validate that running `<operation>` in `<project X>` leaves `<store/state>` in the expected shape. The `reviewer` performs the operation and inspects the actual data/state before and after, recording a `decision` note with the observed before/after and whether invariants held. The `researcher` provides the invariants from the schema decision note.
 
-**O que faz:** valida o efeito colateral real (dados/estado), não só o retorno; o antes/depois
-observado e os invariantes ficam registrados, fechando a validação de uma mudança de dados.
+**What it does:** validates the real side effect (data/state), not just the return value; the observed
+before/after and the invariants are recorded, closing the validation of a data change.
 
-### 9. Validar idempotência / repetição
+### 9. Validate idempotency / repetition
 > Validate that `<operation>` in `<project X>` is safe to run twice. The `reviewer` runs it, then runs it again on the same input, and observes whether the second run changes anything it shouldn't. Record a `learning` note with the observed behavior and any non-idempotent side effect found.
 
-**O que faz:** prova (ou refuta) idempotência executando duas vezes e observando o efeito da segunda
-chamada; qualquer efeito colateral indevido vira um aprendizado registrado.
+**What it does:** proves (or refutes) idempotency by running twice and observing the effect of the second
+call; any improper side effect becomes a recorded learning.
 
 ---
 
-## C. Build, deploy e contratos
+## C. Build, deploy, and contracts
 
-### 10. Validar build e deploy
+### 10. Validate build and deploy
 > Validate that `<project X>` builds and is deployable. The `reviewer` runs `<build command>`, confirms it completes without errors, inspects the output/bundle for obvious problems, and records a `decision` note with the build result and warnings. If it fails, `SendMessage` the `executor` with the exact error.
 
-**O que faz:** valida o artefato de build de verdade (não só o dev server) e registra o resultado; um
-build quebrado vai ao executor com o erro exato, não com "não buildou".
+**What it does:** validates the build artifact for real (not just the dev server) and records the result; a
+broken build goes to the executor with the exact error, not with "it didn't build".
 
-### 11. Validar contrato/API contra o consumidor
+### 11. Validate the contract/API against the consumer
 > Validate that `<endpoint/API>` in `<project X>` still matches what its consumers expect. The `researcher` pulls the contract decision note from the vault; the `reviewer` calls the endpoint with a real request, compares the actual response shape/status against the contract, and records a `decision` note: matches or drifted.
 
-**O que faz:** valida o contrato com uma chamada real contra o shape registrado, detectando drift; o
-veredito documentado evita que consumidores quebrem em silêncio.
+**What it does:** validates the contract with a real call against the recorded shape, detecting drift; the
+documented verdict prevents consumers from breaking silently.
 
-### 12. Validar variáveis de ambiente e configuração
+### 12. Validate environment variables and configuration
 > Validate that `<project X>` has every required env var/binding/secret configured for `<environment>`. The `reviewer` lists what the code reads, checks each is present (without printing secret values), and records a `learning` note with what's set vs missing. `SendMessage` Matheus if a required value is missing.
 
-**O que faz:** valida a configuração necessária sem expor segredos e registra o que está faltando; o
-`learning` note vira o checklist de config do `<projeto X>` para o próximo ambiente.
+**What it does:** validates the required configuration without exposing secrets and records what's missing; the
+`learning` note becomes the config checklist of `<project X>` for the next environment.
 
-### 13. Validar uma migração antes de promover
+### 13. Validate a migration before promoting
 > A migration `<describe>` ran in `<project X>`. Before promoting, the `reviewer` validates a data sample before/after, confirms the rollback path works on a copy, and records a `decision` note with the verification result. The `researcher` provides the expected post-migration shape from the migration decision note.
 
-**O que faz:** valida a migração no concreto (amostra + rollback) antes de promover; o resultado
-documentado é o que autoriza (ou bloqueia) a promoção, com rastro.
+**What it does:** validates the migration concretely (sample + rollback) before promoting; the documented
+result is what authorizes (or blocks) the promotion, with a trail.
 
 ---
 
-## D. Validação adversarial
+## D. Adversarial validation
 
-### 14. Validação adversarial do diff
+### 14. Adversarial validation of the diff
 > `reviewer`: validate the current diff in `<project X>` adversarially — assume there is a defect until proven otherwise. For each suspicion, state the concrete test that would expose it, run/observe it, and record confirmed defects as `learning` notes. `SendMessage` the `executor` with each confirmed issue.
 
-**O que faz:** uma passada cética que tenta desprovar a corretude executando os testes que exporiam
-falhas; defeitos confirmados viram `learning` notes em vez de sumirem no chat.
+**What it does:** a skeptical pass that tries to disprove correctness by running the tests that would expose
+failures; confirmed defects become `learning` notes instead of vanishing in the chat.
 
-### 15. Validação de segurança da mudança
+### 15. Security validation of the change
 > Validate `<feature>` in `<project X>` for security. The `researcher` lists its trust boundaries and inputs (from the vault if mapped); the `reviewer` probes each for injection, authz bypass, and secret leakage by actually sending crafted inputs, and records findings as `decision`/`learning` notes tagged `security`.
 
-**O que faz:** valida segurança sondando a superfície real com entradas elaboradas, não só inspeção; os
-achados ficam com tag `security` para auditoria posterior via `search security`.
+**What it does:** validates security by probing the real surface with crafted inputs, not just inspection; the
+findings stay tagged `security` for later audit via `search security`.
 
-### 16. Validar performance / comportamento sob carga
+### 16. Validate performance / behavior under load
 > Validate that `<feature/endpoint>` in `<project X>` performs acceptably. The `reviewer` exercises it under `<repeated/concurrent/large input>`, observes timing and resource behavior, and records a `learning` note with the measured numbers and any degradation. The `researcher` supplies the expected budget from any prior note.
 
-**O que faz:** valida desempenho medindo o comportamento real sob carga e compara com o orçamento
-esperado; os números medidos ficam registrados como baseline para a próxima validação.
+**What it does:** validates performance by measuring the real behavior under load and comparing with the
+expected budget; the measured numbers are recorded as a baseline for the next validation.
 
 ---
 
-## E. Registro do veredito
+## E. Recording the verdict
 
-### 17. Reconciliar veredito com a decisão original
+### 17. Reconcile the verdict with the original decision
 > For `<change>` in `<project X>`, the `reviewer` compares the validation result against the original `decision` note that proposed it. If the change met its goal, link the validation `learning` note to the decision via `[[wikilink]]`; if it didn't, record why and `SendMessage` the `executor`. The `librarian` then runs `index`.
 
-**O que faz:** fecha o laço entre o que foi *decidido* e o que foi *validado*, ligando as notas; o
-índice atualizado deixa decisão e veredito conectados e pesquisáveis juntos.
+**What it does:** closes the loop between what was *decided* and what was *validated*, linking the notes; the
+updated index leaves decision and verdict connected and searchable together.
 
-### 18. Relatório de validação persistido
+### 18. Persisted validation report
 > Validation of `<change>` in `<project X>` is done. Summarize the verdict (what was tested, observed result, pass/fail, residual risk) and ensure it lives as a `decision`/`learning` note with `--task <id>`; the `librarian` runs `index`. Give me a 5-line summary of the verdict and where it's persisted.
 
-**O que faz:** garante que o veredito de validação não fique só na conversa — vira nota vinculada à
-tarefa e indexada, para a próxima sessão saber o que já foi validado e o risco residual.
+**What it does:** ensures the validation verdict doesn't stay only in the conversation — it becomes a note linked to the
+task and indexed, so the next session knows what has already been validated and the residual risk.

@@ -67,5 +67,5 @@ test('roadmap: no decisions → empty roadmap, exit 0', async () => {
   const res = await run('roadmap', { project: 'rmempty', root });
   assert.equal(res.ok, true);
   assert.deepEqual(res.data.months, []);
-  assert.match(res.lines.join('\n'), /nenhuma decisão/);
+  assert.match(res.lines.join('\n'), /no decisions/);
 });

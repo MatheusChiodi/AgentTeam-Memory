@@ -1,12 +1,13 @@
 ---
-description: Cria uma nota de plano estruturada (objetivo, passos, riscos, critério de pronto) no vault
-argument-hint: "<objetivo>" [--steps "a;b;c"]
+description: Create a structured plan note (goal, steps, risks, done-when) in the vault
+argument-hint: "<goal>" [--steps "a;b;c"]
 allowed-tools: Bash(node:*)
 ---
-Você é um **teammate** arrancando uma tarefa. Padronize o início criando a nota de plano:
+You are a **teammate** kicking off a task. Standardize the start by creating the plan note:
 
-Execute: `node memory-team/memory.mjs plan $ARGUMENTS`
+Run: `node memory-team/memory.mjs plan $ARGUMENTS`
 
-Gera uma nota `memory` (tag `plan`) já com as seções `## Objetivo`, `## Passos` (cada `--steps` vira
-checkbox `- [ ]`), `## Riscos` e `## Pronto quando`. Responda só com o nome/caminho da nota criada —
-o conteúdo já está no vault. Quando instalado globalmente, use `~/.claude/memory-team/memory.mjs`.
+It generates a `memory` note (tag `plan`) with the sections `## Goal`, `## Steps` (each `--steps` item
+becomes a `- [ ]` checkbox), `## Risks` and `## Done when`. Reply with just the name/path of the
+created note — the content is already in the vault. When installed globally, use
+`~/.claude/memory-team/memory.mjs`.

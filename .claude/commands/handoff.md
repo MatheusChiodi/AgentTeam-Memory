@@ -1,14 +1,14 @@
 ---
-description: Gera o pacote de passagem (estado, itens abertos, pins, decisões) para a próxima sessão/agente
+description: Generate the handoff packet (state, open items, pins, decisions) for the next session/agent
 argument-hint: [--save]
 allowed-tools: Bash(node:*)
 ---
-Você é um **teammate** da memory-team encerrando o turno. Agent teams não têm resume — o handoff É a
-continuidade. Antes de ir, gere o pacote de passagem a partir do vault:
+You are a **teammate** of the memory-team ending the turn. Agent teams have no resume — the handoff
+IS the continuity. Before you go, generate the handoff packet from the vault:
 
-Execute: `node memory-team/memory.mjs handoff ${ARGUMENTS:---save}`
+Run: `node memory-team/memory.mjs handoff ${ARGUMENTS:---save}`
 
-Isso reúne: último `state` por agente, checkboxes abertos, notas fixadas (pins) e decisões recentes,
-em um markdown coeso pronto para colar no início da próxima sessão. Com `--save` ele vira uma nota
-`memory` (tag `handoff`) com wikilinks para as fontes. Responda só com o pacote + onde a nota caiu.
-Quando instalado globalmente, use `~/.claude/memory-team/memory.mjs`.
+This gathers: the latest `state` per agent, open checkboxes, pinned notes (pins) and recent decisions
+into a cohesive Markdown ready to paste at the start of the next session. With `--save` it becomes a
+`memory` note (tag `handoff`) with wikilinks to the sources. Reply with just the packet + where the
+note landed. When installed globally, use `~/.claude/memory-team/memory.mjs`.

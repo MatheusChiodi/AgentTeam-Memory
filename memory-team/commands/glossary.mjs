@@ -39,9 +39,9 @@ export default {
     // Most frequent first; ties alphabetical for a stable glossary.
     data.sort((a, b) => b.count - a.count || a.term.localeCompare(b.term));
 
-    if (!data.length) return { ok: true, lines: ['(glossário vazio)'], data };
+    if (!data.length) return { ok: true, lines: ['(empty glossary)'], data };
 
-    const lines = [`# glossário (${data.length} termo(s), freq ≥ ${min})`, ''];
+    const lines = [`# glossary (${data.length} term(s), freq ≥ ${min})`, ''];
     for (const e of data) lines.push(`- **${e.term}** (${e.count}) — ${e.notes.join(', ')}`);
     return { ok: true, lines, data };
   },

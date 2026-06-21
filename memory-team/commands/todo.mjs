@@ -1,7 +1,7 @@
 // todo — aggregate every checkbox scattered across note bodies into one place, and
 // flip one to done. List mode collects `- [ ]` (open) / `- [x]` (done) via the
-// shared extractor. The `todo check <ref> "<texto>"` subcommand resolves a note,
-// finds the UNIQUE open checkbox whose text includes <texto> (case-insensitive),
+// shared extractor. The `todo check <ref> "<text>"` subcommand resolves a note,
+// finds the UNIQUE open checkbox whose text includes <text> (case-insensitive),
 // flips that body line to `- [x]`, and rewrites the note via formatNote so any
 // unknown frontmatter survives the round-trip.
 import { writeFileSync } from 'node:fs';
@@ -21,7 +21,7 @@ function runCheck(ctx) {
   // pos = ['check', <ref>, ...textWords]; ref is pos[1], the rest is the match text.
   const ref = ctx.pos[1];
   const text = ctx.pos.slice(2).join(' ').trim();
-  if (!ref || !text) return fail('usage: todo check <ref> "<texto>"');
+  if (!ref || !text) return fail('usage: todo check <ref> "<text>"');
 
   const scope = ctx.all ? { all: true } : { project: PROJECT };
   const matches = resolveNotes(ROOT, ref, scope);
@@ -50,8 +50,8 @@ function runCheck(ctx) {
 
 export default {
   name: 'todo',
-  summary: 'List open checkboxes across notes, or `todo check <ref> "<texto>"` to flip one',
-  usage: 'todo [--done] [--all] [--json]  |  todo check <ref> "<texto>"',
+  summary: 'List open checkboxes across notes, or `todo check <ref> "<text>"` to flip one',
+  usage: 'todo [--done] [--all] [--json]  |  todo check <ref> "<text>"',
   run(ctx) {
     if (ctx.pos[0] === 'check') return runCheck(ctx);
 
@@ -73,10 +73,10 @@ export default {
     const data = { open: openItems.length, done: doneItems.length, items };
 
     if (!shown.length) {
-      return { ok: true, lines: ['(nenhum checkbox)'], data };
+      return { ok: true, lines: ['(no checkboxes)'], data };
     }
 
-    const lines = [`# todo — ${openItems.length} aberto(s)${opt.done === true ? `, ${doneItems.length} feito(s)` : ''}`, ''];
+    const lines = [`# todo — ${openItems.length} open${opt.done === true ? `, ${doneItems.length} done` : ''}`, ''];
     let cur = null;
     for (const i of shown) {
       if (i.note !== cur) { lines.push(`## [[${i.note}]]`); cur = i.note; }

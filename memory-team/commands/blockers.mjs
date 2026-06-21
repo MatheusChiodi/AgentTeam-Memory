@@ -49,9 +49,9 @@ export default {
     }
     data.sort((a, b) => a.name.localeCompare(b.name));
 
-    if (!data.length) return { ok: true, lines: ['nenhum bloqueio'], data };
+    if (!data.length) return { ok: true, lines: ['no blockers'], data };
 
-    const lines = [`# ${data.length} bloqueio(s)`, ''];
+    const lines = [`# ${data.length} blocker(s)`, ''];
     for (const b of data) lines.push(`- ${b.name} — ${dim(b.reason)}`);
     return { ok: true, lines, data };
   },

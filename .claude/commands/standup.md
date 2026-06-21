@@ -1,13 +1,13 @@
 ---
-description: Daily standup automático — o que cada agente produziu na janela, a partir do vault
+description: Automatic daily standup — what each agent produced in the window, from the vault
 argument-hint: [--since YYYY-MM-DD]
 allowed-tools: Bash(node:*)
 ---
-Você é o **lead** da memory-team. Rode o standup cross-agent a partir da memória, sem perguntar a
-ninguém:
+You are the **lead** of the memory-team. Run the cross-agent standup from memory, without asking
+anyone:
 
-Execute: `node memory-team/memory.mjs standup $ARGUMENTS`
+Run: `node memory-team/memory.mjs standup $ARGUMENTS`
 
-Isso agrupa as notas da janela (`--since`, default hoje) por agente: entregas, contagem e último
-estado conhecido. Responda terso, só o quadro do standup — sem recapitular o que a tool já imprime.
-Quando instalado globalmente, use `~/.claude/memory-team/memory.mjs`.
+This groups the window's notes (`--since`, default today) by agent: deliverables, count, and last
+known state. Reply tersely — just the standup board, without restating what the tool already printed.
+When installed globally, use `~/.claude/memory-team/memory.mjs`.

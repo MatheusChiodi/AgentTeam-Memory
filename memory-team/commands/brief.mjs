@@ -2,14 +2,14 @@
 // economy: instead of making the LLM scan the whole vault, we distill it LOCALLY here
 // (rank + estimate + fill) and hand the agent a pack that already fits a token budget.
 // Selection priority: pins → relevance to <query> (if any) → recency. Each note renders
-// as `título — summary` (body appended with --full). budgetFill never exceeds the budget:
+// as `title — summary` (body appended with --full). budgetFill never exceeds the budget:
 // the first note that would overflow is dropped whole (and the rest), never truncated.
 import { collectNotes, isPinned } from '../notes.mjs';
 import { estimateTokens, scoreByQuery, budgetFill } from '../analyze.mjs';
 
 const DEFAULT_BUDGET = 1500;
 
-/** The renderable text for a candidate: `título — summary`, plus body when --full. */
+/** The renderable text for a candidate: `title — summary`, plus body when --full. */
 function renderNote(note, full) {
   const head = `## ${note.name}${note.fm.summary ? ` — ${note.fm.summary}` : ''}`;
   if (full && note.body) {

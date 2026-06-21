@@ -49,21 +49,21 @@ export default {
     const data = { states, open, pins, decisions };
 
     const body = [];
-    body.push('## Estado por agente');
+    body.push('## State per agent');
     if (states.length) for (const s of states) body.push(`- **${s.agent}** ([[${s.name}]]): ${s.summary}`.trimEnd());
-    else body.push('- (nenhum estado registrado)');
+    else body.push('- (no state recorded)');
     body.push('');
-    body.push('## Itens abertos');
+    body.push('## Open items');
     if (open.length) for (const o of open) body.push(`- [ ] ${o.text}  ([[${o.note}]])`);
-    else body.push('- (nenhum item aberto)');
+    else body.push('- (no open items)');
     body.push('');
     body.push('## Pins');
     if (pins.length) for (const p of pins) body.push(`- [[${p.name}]] — ${p.summary}`.trimEnd());
-    else body.push('- (nenhum pin)');
+    else body.push('- (no pins)');
     body.push('');
-    body.push('## Decisões recentes');
+    body.push('## Recent decisions');
     if (decisions.length) for (const d of decisions) body.push(`- [[${d.name}]] — ${d.summary}`.trimEnd());
-    else body.push('- (nenhuma decisão)');
+    else body.push('- (no decisions)');
 
     if (opt.save === true) {
       // related → wikilinks to every source so the packet is navigable in Obsidian.
@@ -75,14 +75,14 @@ export default {
       const { file } = saveNote(ROOT, PROJECT, {
         type: 'memory',
         title: 'Handoff packet',
-        summary: 'Pacote de passagem: estados, itens abertos, pins e decisões.',
+        summary: 'Handoff packet: states, open items, pins and decisions.',
         tags: ['handoff'],
         related,
         agent: opt.agent || 'unknown',
         body: body.join('\n'),
       });
       data.path = file;
-      return { ok: true, lines: [`# handoff salvo (${file})`, '', ...body], data };
+      return { ok: true, lines: [`# handoff saved (${file})`, '', ...body], data };
     }
 
     return { ok: true, lines: ['# Handoff packet', '', ...body], data };

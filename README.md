@@ -7,7 +7,7 @@
 [![Node](https://img.shields.io/badge/node-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A52.1.32-d97757)](https://docs.anthropic.com/en/docs/claude-code)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](#9-design-invariants)
-[![Tests](https://img.shields.io/badge/tests-node%3Atest%20232%2F232-success)](#8-testing)
+[![Tests](https://img.shields.io/badge/tests-node%3Atest%20406%2F406-success)](#8-testing)
 [![License](https://img.shields.io/badge/license-MIT%20%2B%20Attribution-blue)](LICENSE)
 
 *Created by **Matheus Chiodi (MChiodi)**.*
@@ -15,7 +15,7 @@
 </div>
 
 > A **zero-dependency Node.js (ESM) CLI** that gives a Claude Code agent team a shared brain.
-> Install once on any machine; it works in **every** project you open. 34 commands + a real-time usage
+> Install once on any machine; it works in **every** project you open. 54 commands + a real-time usage
 > status line, one Obsidian vault.
 
 ---
@@ -29,7 +29,7 @@
 4. [What the setup does](#4-what-the-setup-does)
 5. [Runtime architecture](#5-runtime-architecture)
 6. [Vault structure](#6-vault-structure)
-7. [Command reference (34)](#7-command-reference-34)
+7. [Command reference (54)](#7-command-reference-54)
 8. [Testing](#8-testing)
 9. [Design invariants](#9-design-invariants)
 10. [Repository layout](#10-repository-layout)
@@ -70,7 +70,7 @@ flowchart LR
     L["librarian"]
   end
   LEAD -->|SendMessage / task list| R & E & V & L
-  R & E & V & L -->|"node memory.mjs save / search"| CLI[["memory CLI<br/>(34 commands)"]]
+  R & E & V & L -->|"node memory.mjs save / search"| CLI[["memory CLI<br/>(54 commands)"]]
   CLI --> VAULT[("Obsidian vault<br/>partitioned per project")]
   VAULT -.->|"READ before acting"| R & E & V & L
   HOOKS["Hooks (opt-in, fail-open)<br/>TaskCompleted · TeammateIdle"] -.->|enforce note-before-close| CLI
@@ -132,7 +132,7 @@ node memory-team/statusline.mjs --install     # register it in ~/.claude/setting
 node memory-team/statusline.mjs --uninstall   # remove it
 ```
 
-Thresholds (`warn`, `danger`) come from `config set statusline.warn 70` (see the [`config`](#7-command-reference-34) tool).
+Thresholds (`warn`, `danger`) come from `config set statusline.warn 70` (see the [`config`](#7-command-reference-54) tool).
 
 ---
 
@@ -260,7 +260,7 @@ fields they don't understand.
 
 ---
 
-## 7. Command reference (34)
+## 7. Command reference (54)
 
 CLI entry point: `node "~/.claude/memory-team/memory.mjs" <command>`. Run `… memory.mjs help` for the
 live list. `--json` works on every read command; `<ref>` is a **loose reference** resolved by
@@ -331,7 +331,7 @@ live list. `--json` works on every read command; `<ref>` is a **loose reference*
 | `export [--format json\|md] [--out file] [--all]` | export notes as JSON (default) or concatenated Markdown |
 | `import <file> [--project p]` | import notes from a JSON bundle (from `export`) |
 
-### Phase 2 — real-time, observability & productivity
+### Real-time, observability & productivity
 
 | Command | Purpose |
 | --- | --- |
@@ -345,6 +345,53 @@ live list. `--json` works on every read command; `<ref>` is a **loose reference*
 | `pin <ref> [--off] \| pin --list [--all] [--json]` | pin a note so it floats to the top of `search`/`list`/`recent` |
 | `snapshot [--id id] \| --list [--all] \| --restore <id>` | checkpoint the vault to `_snapshots/`; `--restore` is a **true reset** (safety snapshot first) |
 | `relate <ref> [--top N] [--apply] [--all] [--json]` | suggest (or `--apply`) `[[wikilinks]]` for a note by tag/summary similarity |
+
+### Visualization — see the system at a glance
+
+| Command | Purpose |
+| --- | --- |
+| `diagram [--scope links\|tags\|agents\|types] [--save] [--all] [--json]` | render the vault as a **Mermaid** `flowchart` — the note/wikilink graph (`links`) or a note↔tag/agent/type map; labels sanitized so they never break the parser |
+| `mindmap <ref> \| --tag <t> [--depth N] [--save] [--all] [--json]` | a **Mermaid `mindmap`** centered on one note (its wikilinks + tag-siblings) or on a tag (its carriers) |
+| `dashboard [--all] [--json]` | one ANSI panel: project + enabled, totals by type/agent (mini-bars), recent notes, pins, orphans |
+| `tree [--by type\|agent] [--depth N] [--all] [--json]` | the vault as a glyphed **tree** (project → type → note), each leaf with a truncated summary |
+| `activity [--days N] [--by agent\|type] [--today YYYY-MM-DD] [--json]` | a unicode **sparkline** of notes created per day, with total / average / peak |
+| `heatmap [--weeks N] [--today YYYY-MM-DD] [--json]` | a GitHub-style **calendar heatmap** of note creation, intensity by quartile |
+
+### Context packs & token economy — more agent output, same tokens
+
+The heavy lifting (ranking, summarizing, counting, budgeting) is **local and heuristic** — it never spends the LLM. These tools hand an agent a pre-distilled pack instead of making it scan the whole vault.
+
+| Command | Purpose |
+| --- | --- |
+| `brief [<query>…] [--budget N] [--full] [--all] [--json]` | a **token-budgeted context pack** (pins → query-relevant → recent); never exceeds `--budget` (a note that doesn't fit is dropped whole) |
+| `focus <query>… [--top N] [--budget N] [--all] [--json]` | rank notes by relevance to a query and return only those that fit a token / count budget |
+| `tokens [<ref>] [--text "…"] [--all] [--json]` | estimate the token cost of a note, the project, or arbitrary text (deterministic, monotonic) |
+| `tldr [<ref>] [--sentences N] [--all] [--json]` | an **extractive** TL;DR of a note (or one line per note), no LLM |
+| `recap [--since YYYY-MM-DD] [--max N] [--today YYYY-MM-DD] [--json]` | a dense, minimal-token recap of a window, prioritizing `decision`/`state` over `communication` |
+
+### Daily flow — terminal vibe-coding commands
+
+| Command | Purpose |
+| --- | --- |
+| `plan "<goal>" [--steps "a;b;c"] [--agent n] [--json]` | scaffold a structured **plan** note (Goal / Steps as `- [ ]` / Risks / Done-when) |
+| `standup [--since YYYY-MM-DD] [--today YYYY-MM-DD] [--all] [--json]` | a cross-agent **standup**: per agent, what was delivered in the window + last state |
+| `handoff [--save] [--all] [--json]` | a **handoff packet** (latest state per agent, open checkboxes, pins, recent decisions) for the next session — agent teams have no resume |
+| `todo [--done] [--all] [--json]` · `todo check <ref> "<text>"` | aggregate every open `- [ ]` checkbox across notes; `check` flips one to done (unique match, persisted via `formatNote`) |
+| `roadmap [--include learning] [--save] [--all] [--json]` | group `decision` notes into a `YYYY-MM` timeline |
+
+### Knowledge & metrics
+
+| Command | Purpose |
+| --- | --- |
+| `blockers [--all] [--json]` | surface notes flagged as risk/blocked (by tag or body marker `⚠`/`blocked`/`risco`) |
+| `glossary [--min N] [--top N] [--all] [--json]` | a term index of recurring vocabulary across summaries/titles, with source notes |
+| `progress [--all] [--json]` | objective metrics: checkboxes done/total (% + bar), fully-checked plans, open blockers |
+| `changelog [--since YYYY-MM-DD] [--save] [--today YYYY-MM-DD] [--all] [--json]` | a Markdown changelog from `decision`/`learning` notes, by date |
+
+> **Slash commands (orchestration).** `.claude/commands/` ships `/diagrama` and `/mindmap` (which **fan
+> out** agents to architect a system diagram by subsystem, then a reviewer consolidates and the engine
+> materializes the Mermaid), plus `/standup`, `/handoff`, `/recap`, `/plano` as direct wrappers of the
+> tools above.
 
 > **Safety guarantees.** Mutating tools (`tag`, `retag`, `prune`, `archive`, `move`, `rename`, `import`)
 > rewrite notes via `formatNote` to preserve unknown frontmatter. An ambiguous `<ref>` is reported,
@@ -399,21 +446,33 @@ memory-team/
   lib.mjs                   # low-level helpers (vault/project resolution, frontmatter, walk)
   notes.mjs                 # data layer (collect/resolve/format notes, wikilinks, tag histogram)
   memory.mjs                # thin dispatcher: argv → command, render lines/data/exit
-  commands/                 # one file per command (registry auto-discovers; 34 commands)
-  statusline.mjs            # Phase 2 — standalone Claude Code status line (real-time plan/ctx/cost)
+  render.mjs                # pure presentation primitives (ANSI, bar, sparkline, box, tree, Mermaid escaping)
+  analyze.mjs               # pure text analysis (token estimate, extractive summary, query scoring, checkboxes)
+  commands/                 # one file per command (registry auto-discovers; 54 commands)
+  statusline.mjs            # standalone Claude Code status line (real-time plan/ctx/cost)
   CLAUDE.md                 # Memory Protocol (injected into ~/.claude/CLAUDE.md)
   agents/                   # researcher · executor · reviewer · librarian
   hooks/                    # task-completed.mjs · teammate-idle.mjs (opt-in, fail-open)
   test/                     # node:test suite (real temp vault, no mocks)
-docs/                       # ARCHITECTURE.md · USER-STORIES.md (+ *-PHASE-2.md) · system-guide.excalidraw
+.claude/commands/           # slash commands: setup · diagrama · mindmap · standup · handoff · recap · plano
+docs/                       # FEATURES.md (feature & usage guide) · ARCHITECTURE*.md · USER-STORIES*.md · topic prompt packs
 tools/build-guide.mjs       # regenerates docs/system-guide.excalidraw
 START.md                    # install + day-to-day operation + lead prompts
 ```
 
-For the full design rationale, read **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** /
-**[docs/USER-STORIES.md](docs/USER-STORIES.md)** (Phase 0/1 — the 25-command base) and the Phase 2
-expansion in **[docs/ARCHITECTURE-PHASE-2.md](docs/ARCHITECTURE-PHASE-2.md)** /
-**[docs/USER-STORIES-PHASE-2.md](docs/USER-STORIES-PHASE-2.md)** (the real-time status line + 9 new tools).
+For a task-oriented tour of **every command with usage methods and examples**, read the
+**[Feature & Usage Guide → docs/FEATURES.md](docs/FEATURES.md)**.
+
+For the full design rationale, read the architecture and user-story specs:
+
+| Capability layer | Architecture | User stories |
+| --- | --- | --- |
+| Core CLI (the command base + data layer) | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | [docs/USER-STORIES.md](docs/USER-STORIES.md) |
+| Real-time status line + observability tools | [docs/ARCHITECTURE-PHASE-2.md](docs/ARCHITECTURE-PHASE-2.md) | [docs/USER-STORIES-PHASE-2.md](docs/USER-STORIES-PHASE-2.md) |
+| Terminal DX (visualization, token economy, daily flow, knowledge) | [docs/ARCHITECTURE-PHASE-3.md](docs/ARCHITECTURE-PHASE-3.md) | [docs/USER-STORIES-PHASE-3.md](docs/USER-STORIES-PHASE-3.md) |
+
+Topic-specific, ready-to-paste prompt packs live under `docs/` (architecture, review, unit-tests,
+bugs, improvements, project-analysis, project-changes, project-validation, vibe-coding).
 
 ---
 

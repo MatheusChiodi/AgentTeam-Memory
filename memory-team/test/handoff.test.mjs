@@ -39,10 +39,10 @@ test('handoff: assembles states, open items, pins, decisions', async () => {
 test('handoff: emits cohesive markdown with all sections', async () => {
   const res = await run('handoff', { project: 'hand', root });
   const md = res.lines.join('\n');
-  assert.match(md, /## Estado por agente/);
-  assert.match(md, /## Itens abertos/);
+  assert.match(md, /## State per agent/);
+  assert.match(md, /## Open items/);
   assert.match(md, /## Pins/);
-  assert.match(md, /## Decisões recentes/);
+  assert.match(md, /## Recent decisions/);
 });
 
 test('handoff: --save persists a memory note tagged handoff with related wikilinks', async () => {
@@ -68,8 +68,8 @@ test('handoff: empty vault yields a minimal valid packet, exit 0', async () => {
   assert.deepEqual(res.data.pins, []);
   assert.deepEqual(res.data.decisions, []);
   const md = res.lines.join('\n');
-  assert.match(md, /nenhum estado registrado/);
-  assert.match(md, /nenhum item aberto/);
+  assert.match(md, /no state recorded/);
+  assert.match(md, /no open items/);
 });
 
 test('handoff: latest state per agent wins (most recent created)', async () => {

@@ -48,7 +48,7 @@ test('todo: no checkboxes anywhere → empty list, exit 0', async () => {
   assert.equal(res.ok, true);
   assert.equal(res.data.open, 0);
   assert.deepEqual(res.data.items, []);
-  assert.match(res.lines.join('\n'), /nenhum checkbox/);
+  assert.match(res.lines.join('\n'), /no checkboxes/);
 });
 
 test('todo check: flips a unique open checkbox and persists on disk', async () => {

@@ -1,234 +1,234 @@
-# AgentTeam-Memory — Arquitetura
+# AgentTeam-Memory — Architecture
 
-> Documento de referência da arquitetura do CLI de memória do `memory-team`.
-> Estado: **Fase 2 entregue** — +10 features (F11–F20), +9 tools de registry + 1 statusline
-> standalone sobre os 25 comandos base → **34 comandos + statusline**; suíte **232/232** (era 100/100).
-> A base (Fase 0/1) somava 25 comandos / suíte 100/100.
-> Detalhamento da Fase 2: [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md) ·
+> Architecture reference document for the `memory-team` memory CLI.
+> Status: **Phase 2 delivered** — +10 features (F11–F20), +9 registry tools + 1 standalone
+> statusline on top of the 25 base commands → **34 commands + statusline**; suite **232/232** (was 100/100).
+> The base (Phase 0/1) totaled 25 commands / suite 100/100.
+> Phase 2 breakdown: [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md) ·
 > [`USER-STORIES-PHASE-2.md`](./USER-STORIES-PHASE-2.md).
-> Fonte da verdade do código: `memory-team/{lib.mjs,notes.mjs,memory.mjs,statusline.mjs,commands/}`.
+> Source of truth for the code: `memory-team/{lib.mjs,notes.mjs,memory.mjs,statusline.mjs,commands/}`.
 
 ---
 
-## 1. Visão geral do produto
+## 1. Product overview
 
-`AgentTeam-Memory` é um **CLI Node.js ESM zero-dependency** que dá **memória persistente,
-por-projeto e auditável** a *agent teams* do Claude Code, escrevendo num **vault Obsidian**.
+`AgentTeam-Memory` is a **zero-dependency Node.js ESM CLI** that gives **persistent,
+per-project, auditable memory** to Claude Code *agent teams*, writing into an **Obsidian vault**.
 
-### O problema
+### The problem
 
-*Agent teams* do Claude Code têm duas limitações fundamentais:
+Claude Code *agent teams* have two fundamental limitations:
 
-1. **Sem memória compartilhada** — cada teammate tem o próprio contexto; não há um espaço
-   comum onde fatos, decisões e aprendizados sobrevivam fora da janela de contexto.
-2. **Sem session resume** — quando um teammate termina, o contexto dele desaparece. Numa
-   nova sessão o time recomeça do zero.
+1. **No shared memory** — each teammate has its own context; there is no common space
+   where facts, decisions, and learnings survive outside the context window.
+2. **No session resume** — when a teammate finishes, its context disappears. In a
+   new session the team starts over from scratch.
 
-O resultado é retrabalho, decisões re-litigadas e conhecimento perdido entre sessões.
+The result is rework, re-litigated decisions, and knowledge lost between sessions.
 
-### A solução
+### The solution
 
-Um **vault Obsidian central**, particionado por projeto, é o único artefato que sobrevive.
-O CLI dá aos teammates uma disciplina simples: **LER a memória antes de agir** e **ESCREVER
-uma nota atômica depois de cada entrega**. As notas são markdown com frontmatter YAML, ligadas
-por `[[wikilinks]]`, navegáveis no Obsidian e versionáveis no git. Dois hooks opt-in
-(`TaskCompleted`, `TeammateIdle`) podem **forçar** essa disciplina por projeto.
+A central **Obsidian vault**, partitioned by project, is the only artifact that survives.
+The CLI gives teammates a simple discipline: **READ memory before acting** and **WRITE
+an atomic note after each delivery**. Notes are markdown with YAML frontmatter, linked
+by `[[wikilinks]]`, navigable in Obsidian and versionable in git. Two opt-in hooks
+(`TaskCompleted`, `TeammateIdle`) can **enforce** this discipline per project.
 
 ```mermaid
 flowchart LR
   subgraph Team["Agent team (Claude Code)"]
-    LEAD["Lead<br/>orquestrador"]
+    LEAD["Lead<br/>orchestrator"]
     T1["researcher"]
     T2["executor"]
     T3["reviewer"]
     T4["librarian"]
   end
   LEAD -->|SendMessage| T1 & T2 & T3 & T4
-  T1 & T2 & T3 & T4 -->|"node memory.mjs save/search<br/>(34 comandos)"| CLI[("memory CLI")]
-  CLI --> VAULT[("Vault Obsidian<br/>particionado por projeto")]
-  VAULT -.->|"LER antes de agir"| T1 & T2 & T3 & T4
-  HOOKS["Hooks opt-in<br/>TaskCompleted · TeammateIdle"] -.->|enforce| CLI
-  CC["Claude Code"] -->|"payload via stdin<br/>rate_limits · context_window · cost"| SL["statusline.mjs<br/>(standalone, por turno)"]
-  VAULT -.->|"#notas (read-only barato)"| SL
-  SL -->|"1 linha"| BAR["Claude Code status bar"]
+  T1 & T2 & T3 & T4 -->|"node memory.mjs save/search<br/>(34 commands)"| CLI[("memory CLI")]
+  CLI --> VAULT[("Obsidian Vault<br/>partitioned by project")]
+  VAULT -.->|"READ before acting"| T1 & T2 & T3 & T4
+  HOOKS["Opt-in hooks<br/>TaskCompleted · TeammateIdle"] -.->|enforce| CLI
+  CC["Claude Code"] -->|"payload via stdin<br/>rate_limits · context_window · cost"| SL["statusline.mjs<br/>(standalone, per turn)"]
+  VAULT -.->|"#notes (cheap read-only)"| SL
+  SL -->|"1 line"| BAR["Claude Code status bar"]
 ```
 
 ---
 
-## 2. Arquitetura de runtime
+## 2. Runtime architecture
 
-A Fase 0 refatorou o monólito original numa **arquitetura modular de comandos**: um dispatcher
-fino (`memory.mjs`) descobre comandos automaticamente via um *registry*, cada comando é um módulo
-isolado em `commands/`, e a lógica de acesso ao vault vive num *data layer* (`notes.mjs`) sobre
-helpers de baixo nível (`lib.mjs`). Isso elimina conflitos de merge entre contribuidores paralelos
-(adicionar uma tool = soltar um arquivo) e torna cada comando testável em isolamento.
+Phase 0 refactored the original monolith into a **modular command architecture**: a thin
+dispatcher (`memory.mjs`) auto-discovers commands via a *registry*, each command is an
+isolated module under `commands/`, and the vault-access logic lives in a *data layer* (`notes.mjs`)
+on top of low-level helpers (`lib.mjs`). This eliminates merge conflicts between parallel
+contributors (adding a tool = dropping a file) and makes each command testable in isolation.
 
 ```mermaid
 flowchart TD
-  ARGV["argv (process.argv)"] --> DISP["memory.mjs<br/>(dispatcher fino)"]
+  ARGV["argv (process.argv)"] --> DISP["memory.mjs<br/>(thin dispatcher)"]
   DISP -->|"parseArgs()"| CTX["_ctx.mjs<br/>buildCtx → ctx"]
-  DISP -->|"loadCommands()"| REG["registry.mjs<br/>auto-discovery de commands/*.mjs"]
+  DISP -->|"loadCommands()"| REG["registry.mjs<br/>auto-discovery of commands/*.mjs"]
   REG --> CMD["command module<br/>{ name, summary, usage, run(ctx) }"]
   CTX --> CMD
   CMD -->|"data layer"| NOTES["notes.mjs<br/>collect/resolve/format/links/tags"]
   NOTES -->|"helpers"| LIB["lib.mjs<br/>paths · frontmatter · walk"]
   LIB --> VAULT[("Vault<br/>projects/<proj>/… · global/")]
   CMD -->|"{ ok, code?, lines?, data? }"| DISP
-  DISP -->|"lines → stdout / data → JSON"| OUT["saída ao usuário/agente"]
+  DISP -->|"lines → stdout / data → JSON"| OUT["output to user/agent"]
 ```
 
-### Fluxo de uma invocação
+### Flow of an invocation
 
-1. `memory.mjs` carrega todos os comandos uma vez (`loadCommands()`), faz `parseArgs(argv)` e
-   resolve o nome do comando (o primeiro positional).
-2. Sem nome, `help`, ou `--help` → imprime o help auto-gerado a partir de `usage`/`summary`.
-3. Nome desconhecido → erro em stderr + help + `exit 1`.
-4. Caso contrário, monta o `ctx` com `buildCtx(...)` e chama `cmd.run(ctx)` (suporta retorno
-   síncrono ou `Promise`).
-5. Exceção lançada → `error in "<cmd>": <msg>` em stderr + `exit 1` (fail-loud no dispatcher).
-6. Render do resultado:
-   - `--json` **e** `res.data !== undefined` → `JSON.stringify(res.data, null, 2)` no stdout;
-   - senão, `res.lines.join('\n')` no stdout;
-   - `res.code` (se truthy) vira `process.exitCode`.
+1. `memory.mjs` loads all commands once (`loadCommands()`), runs `parseArgs(argv)`, and
+   resolves the command name (the first positional).
+2. No name, `help`, or `--help` → prints the auto-generated help from `usage`/`summary`.
+3. Unknown name → error on stderr + help + `exit 1`.
+4. Otherwise, it builds `ctx` with `buildCtx(...)` and calls `cmd.run(ctx)` (supports a
+   synchronous return or a `Promise`).
+5. Thrown exception → `error in "<cmd>": <msg>` on stderr + `exit 1` (fail-loud in the dispatcher).
+6. Result rendering:
+   - `--json` **and** `res.data !== undefined` → `JSON.stringify(res.data, null, 2)` on stdout;
+   - otherwise, `res.lines.join('\n')` on stdout;
+   - `res.code` (if truthy) becomes `process.exitCode`.
 
 ---
 
-## 3. Camadas
+## 3. Layers
 
-| Camada | Arquivo | Responsabilidade | Não faz |
+| Layer | File | Responsibility | Does not do |
 | --- | --- | --- | --- |
-| **Helpers** | `lib.mjs` | Resolução de paths do vault/projeto, partições, `parseFM` (frontmatter), `walk`, `slug`, `today`, `getp`, `listProjects`, `isEnabled`. | Nunca lê argv nem imprime. |
-| **Data layer** | `notes.mjs` | Enumerar notas (`collectNotes`), resolver referência frouxa (`resolveNotes`), reconstruir texto canônico (`formatNote`), extrair wikilinks (`wikilinksOf`), histograma de tags (`tagHistogram`), `relOf`, `isArchived`. | Nunca chama `console.log`/`process.exit` — tudo é unit-testável. |
-| **Handlers** | `commands/*.mjs` | Um comando por arquivo; implementa `run(ctx)` e devolve `{ ok, code?, lines?, data? }`. | Não resolve env diretamente (usa `ctx.ROOT`/`ctx.PROJECT`). |
-| **Contexto** | `commands/_ctx.mjs` | `parseArgs` (flag parser), `buildCtx` (injeta `ROOT`/`PROJECT`, permite override em testes), `fail()` (erro uniforme). | — |
-| **Registry** | `commands/registry.mjs` | Auto-discovery: importa todo `*.mjs` da pasta exceto `_*` e `registry.mjs`; registra os que têm `name` + `run`. | — |
-| **Dispatcher** | `memory.mjs` | Parse de argv, help, despacho, render de `lines`/`data`/`code`, mapeamento de erro → exit. | Não conhece comandos individuais. |
-| **Hooks** | `hooks/{task-completed,teammate-idle}.mjs` | Enforcement opt-in & fail-open via stdin JSON do Claude Code. | Não bloqueiam se o projeto não tem `.memory-team`. |
-| **Instalador** | `install.mjs` | Promove o runtime para `~/.claude`, faz merge de `settings.json`, injeta o protocolo no `CLAUDE.md`, faz scaffold do vault. Idempotente, não-destrutivo. | — |
+| **Helpers** | `lib.mjs` | Resolves vault/project paths, partitions, `parseFM` (frontmatter), `walk`, `slug`, `today`, `getp`, `listProjects`, `isEnabled`. | Never reads argv nor prints. |
+| **Data layer** | `notes.mjs` | Enumerate notes (`collectNotes`), resolve loose references (`resolveNotes`), reconstruct canonical text (`formatNote`), extract wikilinks (`wikilinksOf`), tag histogram (`tagHistogram`), `relOf`, `isArchived`. | Never calls `console.log`/`process.exit` — everything is unit-testable. |
+| **Handlers** | `commands/*.mjs` | One command per file; implements `run(ctx)` and returns `{ ok, code?, lines?, data? }`. | Does not resolve env directly (uses `ctx.ROOT`/`ctx.PROJECT`). |
+| **Context** | `commands/_ctx.mjs` | `parseArgs` (flag parser), `buildCtx` (injects `ROOT`/`PROJECT`, allows override in tests), `fail()` (uniform error). | — |
+| **Registry** | `commands/registry.mjs` | Auto-discovery: imports every `*.mjs` in the folder except `_*` and `registry.mjs`; registers those that have `name` + `run`. | — |
+| **Dispatcher** | `memory.mjs` | Argv parsing, help, dispatch, rendering of `lines`/`data`/`code`, error → exit mapping. | Does not know individual commands. |
+| **Hooks** | `hooks/{task-completed,teammate-idle}.mjs` | Opt-in & fail-open enforcement via JSON stdin from Claude Code. | Does not block if the project has no `.memory-team`. |
+| **Installer** | `install.mjs` | Promotes the runtime to `~/.claude`, merges `settings.json`, injects the protocol into `CLAUDE.md`, scaffolds the vault. Idempotent, non-destructive. | — |
 
-### Resolução de vault e projeto (`lib.mjs`)
+### Vault and project resolution (`lib.mjs`)
 
-- **Vault root**: `process.env.MEMORY_VAULT` → senão `DEFAULT_VAULT` (`~/.claude/memory-vault`).
-- **Projeto**: `process.env.MEMORY_PROJECT` → senão `slug(basename(cwd))`.
-- **Enabled**: existe `.memory-team` na raiz do projeto → hooks forçam; senão fail-open.
-- Paths normalizados para forward-slash; `MEMORY_VAULT`/`MEMORY_PROJECT` são também os *pontos
-  de injeção* usados pelos testes para apontar a um vault temporário.
+- **Vault root**: `process.env.MEMORY_VAULT` → otherwise `DEFAULT_VAULT` (`~/.claude/memory-vault`).
+- **Project**: `process.env.MEMORY_PROJECT` → otherwise `slug(basename(cwd))`.
+- **Enabled**: a `.memory-team` exists at the project root → hooks enforce; otherwise fail-open.
+- Paths normalized to forward-slash; `MEMORY_VAULT`/`MEMORY_PROJECT` are also the *injection
+  points* used by the tests to point at a temporary vault.
 
 ---
 
-## 4. Contrato de comando
+## 4. Command contract
 
-Todo comando é um módulo ESM com `export default`:
+Every command is an ESM module with `export default`:
 
 ```js
 export default {
-  name: 'list',                          // identificador único (chave do registry)
-  summary: 'List/filter notes …',        // 1 linha; aparece no help
-  usage: 'list [--type t] [--tag x] …',  // assinatura; aparece no help (alinhada)
+  name: 'list',                          // unique identifier (registry key)
+  summary: 'List/filter notes …',        // 1 line; shows up in help
+  usage: 'list [--type t] [--tag x] …',  // signature; shows up in help (aligned)
   run(ctx) {
-    // … lê do data layer, monta saída …
+    // … reads from the data layer, builds the output …
     return { ok: true, lines: [...], data: [...] };
   },
 };
 ```
 
-### O `ctx`
+### The `ctx`
 
 ```js
 ctx = {
-  ROOT,      // vault root resolvido (string, forward-slash)
-  PROJECT,   // projeto detectado/forçado (slug)
-  pos,       // positionals APÓS o nome do comando (string[])
+  ROOT,      // resolved vault root (string, forward-slash)
+  PROJECT,   // detected/forced project (slug)
+  pos,       // positionals AFTER the command name (string[])
   opt,       // flags: { key: value | true }  (--key value | --key)
   json,      // === (opt.json === true)
   all,       // === (opt.all === true)
 }
 ```
 
-> `parseArgs` trata `--key value` como par e `--key` (sem valor seguinte, ou seguido de outra
-> flag) como booleano `true`. Logo, `--tag "a,b"` chega como string `"a,b"`; o comando faz o split.
+> `parseArgs` treats `--key value` as a pair and `--key` (with no following value, or followed by another
+> flag) as boolean `true`. Thus `--tag "a,b"` arrives as the string `"a,b"`; the command does the split.
 
-### O retorno
+### The return value
 
 ```js
 {
-  ok: boolean,       // sucesso lógico (não é o exit code)
-  code?: number,     // vira process.exitCode se truthy (ex.: validate → 1 com erros)
-  lines?: string[],  // saída humana (default); o dispatcher faz join('\n')
-  data?: any,        // saída --json (qualquer JSON-serializável)
+  ok: boolean,       // logical success (not the exit code)
+  code?: number,     // becomes process.exitCode if truthy (e.g.: validate → 1 with errors)
+  lines?: string[],  // human output (default); the dispatcher does join('\n')
+  data?: any,        // --json output (any JSON-serializable)
 }
 ```
 
-### Modo `--json` (transversal — F10)
+### `--json` mode (cross-cutting — F10)
 
-Quando o usuário/agente passa `--json` **e** o comando popula `data`, o dispatcher imprime
-**apenas** o JSON de `data` (sem as `lines`). Comandos de leitura devem sempre popular `data`
-com a mesma informação que mostram em `lines`, para que pipelines e o próprio Claude Code possam
-consumir saída estruturada. Comandos de escrita populam `data` com o resultado (ex.:
+When the user/agent passes `--json` **and** the command populates `data`, the dispatcher prints
+**only** the JSON of `data` (without the `lines`). Read commands must always populate `data`
+with the same information they show in `lines`, so that pipelines and Claude Code itself can
+consume structured output. Write commands populate `data` with the result (e.g.,
 `{ file, type, created }`).
 
-### Convenção de erro
+### Error convention
 
-Use `fail(message, code=1)` de `_ctx.mjs` para um resultado de erro uniforme
-(`{ ok:false, code, lines:[message], data:{error:message} }`), ou retorne o shape manualmente
-como os comandos existentes fazem para usage. Erros **lançados** (throw) são capturados pelo
-dispatcher e viram `exit 1` — use isso só para falhas inesperadas, não para validação de input.
+Use `fail(message, code=1)` from `_ctx.mjs` for a uniform error result
+(`{ ok:false, code, lines:[message], data:{error:message} }`), or return the shape manually
+like the existing commands do for usage. **Thrown** errors (throw) are caught by the
+dispatcher and become `exit 1` — use this only for unexpected failures, not for input validation.
 
 ---
 
-## 5. Estrutura do vault
+## 5. Vault structure
 
 ```
-<VAULT>/                                   # MEMORY_VAULT ou ~/.claude/memory-vault
-├── _index.md                              # MOC mestre (lista projetos + contagem)
-├── config.json                            # Fase 2 (F16) — config central; números tipados
-│                                          #   (ex.: limiares warn/danger do statusline)
-├── _templates/   <nome>.md                # Fase 2 (F17) — templates de nota do vault
-├── _snapshots/   <timestamp>/             # Fase 2 (F19) — checkpoints datados do vault
+<VAULT>/                                   # MEMORY_VAULT or ~/.claude/memory-vault
+├── _index.md                              # master MOC (project list + count)
+├── config.json                            # Phase 2 (F16) — central config; typed numbers
+│                                          #   (e.g.: statusline warn/danger thresholds)
+├── _templates/   <name>.md                # Phase 2 (F17) — vault note templates
+├── _snapshots/   <timestamp>/             # Phase 2 (F19) — dated vault checkpoints
 ├── projects/
-│   └── <project>/                         # slug(basename(cwd)) ou MEMORY_PROJECT
-│       ├── _index.md                      # MOC do projeto (só o librarian regenera)
-│       ├── memory/   YYYY-MM-DD-<slug>.md # memory | decision | learning (+ tags usage/digest, F12/F14)
+│   └── <project>/                         # slug(basename(cwd)) or MEMORY_PROJECT
+│       ├── _index.md                      # project MOC (only the librarian regenerates it)
+│       ├── memory/   YYYY-MM-DD-<slug>.md # memory | decision | learning (+ usage/digest tags, F12/F14)
 │       ├── board/    YYYY-MM-DD-<from>-to-<to>.md   # communication
-│       ├── agents/   <name>.md            # state do teammate (sobrevive à sessão)
-│       ├── tasks/                         # (reservado p/ artefatos de task)
-│       ├── _snapshots/                    # Fase 2 (F19) — checkpoints por projeto
-│       └── _archive/                      # notas arquivadas (F8) — fora de buscas por padrão
-└── global/                                # conhecimento cross-project
+│       ├── agents/   <name>.md            # teammate state (survives the session)
+│       ├── tasks/                         # (reserved for task artifacts)
+│       ├── _snapshots/                    # Phase 2 (F19) — per-project checkpoints
+│       └── _archive/                      # archived notes (F8) — out of searches by default
+└── global/                                # cross-project knowledge
     ├── memory/
     └── board/
 ```
 
-A Fase 2 acrescenta artefatos de serviço **sem** alterar a estrutura existente:
+Phase 2 adds service artifacts **without** changing the existing structure:
 
-- **`config.json`** vive na **raiz do vault** (não numa partição) — é cross-project por natureza
-  (limiares do statusline, formato de data, limite de contexto custom). Não é nota: `config set` o
-  escreve diretamente, sem passar por `formatNote`.
-- **`_templates/`** (F17) guarda os esqueletos de nota do vault, somados aos embutidos no código.
-- **`_snapshots/`** (F19) guarda checkpoints datados — cópia direta dos bytes das notas (sem
-  serializar via `export`), com a recursão sobre `_snapshots` explicitamente excluída.
+- **`config.json`** lives at the **vault root** (not in a partition) — it is cross-project by nature
+  (statusline thresholds, date format, custom context limit). It is not a note: `config set` writes it
+  directly, without going through `formatNote`.
+- **`_templates/`** (F17) holds the vault's note skeletons, in addition to those embedded in the code.
+- **`_snapshots/`** (F19) holds dated checkpoints — a direct copy of the notes' bytes (without
+  serializing via `export`), with recursion over `_snapshots` explicitly excluded.
 
-Diretórios iniciados por `_` continuam sendo de serviço: `collectNotes` percorre só as bases
-conhecidas (`memory/`, `board/`, `agents/`) e **não** inclui `config.json`, `_templates/` nem
-`_snapshots/`. As notas de tag `usage`/`digest` são notas `memory` normais (gravadas por
-`usage --save` / `digest --save`) — aparecem em buscas e no grafo, distinguidas só pela tag.
+Directories starting with `_` remain service directories: `collectNotes` walks only the known
+bases (`memory/`, `board/`, `agents/`) and does **not** include `config.json`, `_templates/`, nor
+`_snapshots/`. The `usage`/`digest` tag notes are normal `memory` notes (written by
+`usage --save` / `digest --save`) — they appear in searches and in the graph, distinguished only by the tag.
 
-### Tipos de nota e destino (`save`)
+### Note types and destination (`save`)
 
-| Tipo | Destino | Naming |
+| Type | Destination | Naming |
 | --- | --- | --- |
-| `memory` `decision` `learning` | `memory/` (ou `global/memory` com `--global`) | `YYYY-MM-DD-<slug-do-título>.md` (sufixo `-2`, `-3`… em colisão) |
+| `memory` `decision` `learning` | `memory/` (or `global/memory` with `--global`) | `YYYY-MM-DD-<title-slug>.md` (suffix `-2`, `-3`… on collision) |
 | `communication` | `board/` | `YYYY-MM-DD-<from>-to-<to>.md` |
-| `state` | `agents/` (sempre por-projeto) | `<slug-do-nome>.md` (idempotente: não sobrescreve) |
+| `state` | `agents/` (always per-project) | `<name-slug>.md` (idempotent: does not overwrite) |
 
-### Schema de frontmatter (ordem canônica — `FM_ORDER`)
+### Frontmatter schema (canonical order — `FM_ORDER`)
 
 ```yaml
 ---
 type: memory            # memory | decision | learning | communication | state
 project: <auto>
 agent: <name>
-summary: "Frase curta para retrieval por IA."
+summary: "Short sentence for AI retrieval."
 tags: [domain, subtopic]
 related: ["[[other-note]]"]
 task: <task-id>
@@ -236,127 +236,127 @@ created: YYYY-MM-DD
 ---
 ```
 
-`formatNote(fm, body)` reconstrói o texto na ordem de `FM_ORDER`; chaves desconhecidas vão para o
-fim, ordenadas. `summary` é sempre aspeado; `related` aspeia cada wikilink. Isso garante que
-comandos de manutenção (retag, rename, move, archive) **reescrevem** notas de forma estável e
-diffável, sem destruir campos que não conhecem.
+`formatNote(fm, body)` reconstructs the text in `FM_ORDER`; unknown keys go to the
+end, sorted. `summary` is always quoted; `related` quotes each wikilink. This guarantees that
+maintenance commands (retag, rename, move, archive) **rewrite** notes in a stable and
+diffable way, without destroying fields they do not know about.
 
 ---
 
-## 6. As 10 Features
+## 6. The 10 Features
 
 | # | Feature | Tools | Status |
 | --- | --- | --- | --- |
-| **F1** | Arquitetura modular extensível de comandos (registry auto-discovery) | — (infra: dispatcher + registry + `_ctx`) | ✅ Fase 0 |
-| **F2** | Navegação e leitura de notas | `list`, `show`, `recent` | ✅ entregue |
-| **F3** | Gestão de taxonomia de tags | `tags`, `tag`, `retag` | ✅ entregue |
-| **F4** | Grafo de conhecimento (wikilinks) | `backlinks`, `links`, `graph`, `orphans` | ✅ entregue |
-| **F5** | Analytics e relatórios do vault | `stats`, `timeline` | ✅ entregue |
-| **F6** | Validação / lint do vault | `validate` | ✅ entregue |
-| **F7** | Detecção de duplicatas e limpeza | `dedupe`, `prune` | ✅ entregue |
-| **F8** | Ciclo de vida de notas | `archive`, `move`, `rename` | ✅ entregue |
-| **F9** | Backup e portabilidade | `export`, `import` | ✅ entregue |
-| **F10** | Modo de saída estruturada JSON (`--json` transversal) | todas as tools de leitura | ✅ entregue |
+| **F1** | Extensible modular command architecture (registry auto-discovery) | — (infra: dispatcher + registry + `_ctx`) | ✅ Phase 0 |
+| **F2** | Note navigation and reading | `list`, `show`, `recent` | ✅ delivered |
+| **F3** | Tag taxonomy management | `tags`, `tag`, `retag` | ✅ delivered |
+| **F4** | Knowledge graph (wikilinks) | `backlinks`, `links`, `graph`, `orphans` | ✅ delivered |
+| **F5** | Vault analytics and reports | `stats`, `timeline` | ✅ delivered |
+| **F6** | Vault validation / lint | `validate` | ✅ delivered |
+| **F7** | Duplicate detection and cleanup | `dedupe`, `prune` | ✅ delivered |
+| **F8** | Note lifecycle | `archive`, `move`, `rename` | ✅ delivered |
+| **F9** | Backup and portability | `export`, `import` | ✅ delivered |
+| **F10** | Structured JSON output mode (`--json` cross-cutting) | all read tools | ✅ delivered |
 
-### F1 — Arquitetura modular extensível (entregue)
+### F1 — Extensible modular architecture (delivered)
 
-Dispatcher fino + registry com auto-discovery. Adicionar uma capacidade = criar um
-`commands/<nome>.mjs` que exporta o contrato. Sem edição central → sem conflito de merge entre
-agentes paralelos. Base de toda a expansão.
+Thin dispatcher + registry with auto-discovery. Adding a capability = creating a
+`commands/<name>.mjs` that exports the contract. No central editing → no merge conflict between
+parallel agents. The basis of all expansion.
 
-### F2 — Navegação e leitura
+### F2 — Navigation and reading
 
-Localizar e ler notas sem abrir o Obsidian. `list` filtra por `type/tag/agent/project/since/limit`
-(e `--archived`); `show <ref>` resolve uma referência frouxa e imprime a nota; `recent [n]` mostra
-as últimas notas por data de criação/modificação. Aproveita `collectNotes`/`resolveNotes` do data
+Locate and read notes without opening Obsidian. `list` filters by `type/tag/agent/project/since/limit`
+(and `--archived`); `show <ref>` resolves a loose reference and prints the note; `recent [n]` shows
+the latest notes by creation/modification date. Leverages `collectNotes`/`resolveNotes` from the data
 layer.
 
-### F3 — Taxonomia de tags
+### F3 — Tag taxonomy
 
-Mantém o vocabulário de tags coerente. `tags` lista o histograma (`tagHistogram`); `tag <ref>`
-adiciona/remove tags numa nota (reescreve via `formatNote`); `retag <old> <new>` renomeia uma tag
-em massa (`--all` = todos os projetos). Evita a entropia de tags sinônimas/typos.
+Keeps the tag vocabulary coherent. `tags` lists the histogram (`tagHistogram`); `tag <ref>`
+adds/removes tags on a note (rewrites via `formatNote`); `retag <old> <new>` renames a tag
+in bulk (`--all` = all projects). Avoids the entropy of synonym/typo tags.
 
-### F4 — Grafo de conhecimento
+### F4 — Knowledge graph
 
-Explora a malha de `[[wikilinks]]` (`wikilinksOf` cobre `related` + corpo). `links <ref>` =
-saída (notas que esta aponta); `backlinks <ref>` = entrada (notas que apontam para esta); `graph`
-gera um diagrama **Mermaid** do grafo; `orphans` lista notas sem nenhuma conexão (entrada nem
-saída) — candidatas a ligar ou arquivar.
+Explores the `[[wikilinks]]` mesh (`wikilinksOf` covers `related` + body). `links <ref>` =
+outgoing (notes this one points to); `backlinks <ref>` = incoming (notes that point to this one); `graph`
+generates a **Mermaid** diagram of the graph; `orphans` lists notes with no connection at all (neither
+incoming nor outgoing) — candidates to link or archive.
 
-### F5 — Analytics e relatórios
+### F5 — Analytics and reports
 
-Métricas do vault. `stats` agrega contagens por tipo/agente/projeto/tag, totais e órfãs
-(`--all` = vault inteiro); `timeline` lista a atividade por data (`--since`, `--limit`),
-útil para auditar o que o time produziu numa janela.
+Vault metrics. `stats` aggregates counts by type/agent/project/tag, totals, and orphans
+(`--all` = entire vault); `timeline` lists activity by date (`--since`, `--limit`),
+useful for auditing what the team produced in a window.
 
-### F6 — Validação / lint
+### F6 — Validation / lint
 
-`validate` checa integridade: frontmatter obrigatório (`type`/`summary`), `type` válido,
-wikilinks quebrados (apontando para notas inexistentes), tags malformadas. **Exit code 1** quando
-há erros — pluga em CI/hook. `--all` valida todos os projetos.
+`validate` checks integrity: required frontmatter (`type`/`summary`), valid `type`,
+broken wikilinks (pointing to nonexistent notes), malformed tags. **Exit code 1** when
+there are errors — plugs into CI/hook. `--all` validates all projects.
 
-### F7 — Duplicatas e limpeza
+### F7 — Duplicates and cleanup
 
-`dedupe` detecta notas quase-idênticas (mesmo título/slug ou summary igual) e reporta grupos;
-`prune` acha ruído (notas vazias ou ainda no placeholder do template) em **dry-run por padrão** —
-com `--apply` **arquiva** os candidatos para `_archive/` (não deleta). Segurança: nada sai das
-buscas sem flag explícita e nada é destruído (recuperável via `archive --restore`).
+`dedupe` detects near-identical notes (same title/slug or equal summary) and reports groups;
+`prune` finds noise (empty notes or still at the template placeholder) in **dry-run by default** —
+with `--apply` it **archives** the candidates to `_archive/` (does not delete). Safety: nothing leaves
+the searches without an explicit flag and nothing is destroyed (recoverable via `archive --restore`).
 
-### F8 — Ciclo de vida de notas
+### F8 — Note lifecycle
 
-`archive <ref>` move a nota para `_archive/` (e `--restore` traz de volta), tirando-a das buscas
-sem perdê-la; `move <ref> <targetProject>` reloca entre projetos; `rename <ref> <novo titulo>`
-muda título + nome de arquivo, reescrevendo o frontmatter. Todos preservam o conteúdo via
+`archive <ref>` moves the note to `_archive/` (and `--restore` brings it back), taking it out of searches
+without losing it; `move <ref> <targetProject>` relocates between projects; `rename <ref> <new title>`
+changes title + filename, rewriting the frontmatter. All preserve the content via
 `formatNote`.
 
-### F9 — Backup e portabilidade
+### F9 — Backup and portability
 
-`export` serializa o vault (ou um projeto) para JSON ou um bundle Markdown (`--format`, `--out`,
-`--all`); `import <file>` reidrata as notas num projeto (`--project`). Garante que a memória é
-portável entre máquinas e versionável fora do Obsidian.
+`export` serializes the vault (or a project) to JSON or a Markdown bundle (`--format`, `--out`,
+`--all`); `import <file>` rehydrates the notes into a project (`--project`). Ensures memory is
+portable between machines and versionable outside Obsidian.
 
-### F10 — Saída estruturada JSON (transversal — iniciada)
+### F10 — Structured JSON output (cross-cutting — started)
 
-`--json` em qualquer comando de leitura faz o dispatcher emitir só `res.data`. Já implementado no
-dispatcher (Fase 0); a expansão exige que **toda** tool de leitura popule `data` de forma
-consistente, habilitando consumo programático (CI, outros agentes, scripts).
+`--json` on any read command makes the dispatcher emit only `res.data`. Already implemented in the
+dispatcher (Phase 0); the expansion requires that **every** read tool populate `data` consistently,
+enabling programmatic consumption (CI, other agents, scripts).
 
-### Fase 2 — F11 a F20
+### Phase 2 — F11 to F20
 
-Observabilidade em tempo real e integração nativa com o Claude Code. Detalhamento completo (payload,
-fallbacks, contratos) em [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md).
+Real-time observability and native integration with Claude Code. Full breakdown (payload,
+fallbacks, contracts) in [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md).
 
-| # | Feature | Tool | Em uma frase |
+| # | Feature | Tool | In one sentence |
 | --- | --- | --- | --- |
-| **F11** ⭐ | Uso de plano/contexto/custo em tempo real | `statusline.mjs` (standalone) | Rodapé do Claude Code mostra `plan · ctx · $ · mem` por turno. |
-| **F12** | Ledger de uso/custo | `usage` | Agrega custo/tokens dos transcripts por dia e projeto. |
-| **F13** | Live tail do vault | `watch` | Imprime cada nota nova ao vivo via `fs.watch`. |
-| **F14** | Digest de sessão | `digest` | Sumário em markdown da janela, agrupado por agente/tipo. |
-| **F15** | Health check | `doctor` | Diagnostica vault, settings, hooks e statusline. |
-| **F16** | Configuração central | `config` | Lê/grava preferências em `config.json` do vault. |
-| **F17** | Templates de nota | `template` | Cria nota a partir de esqueleto com placeholders. |
-| **F18** | Pin / destaque | `pin` | Marca notas-chave para ordenarem antes nas buscas. |
-| **F19** | Snapshot / checkpoint | `snapshot` | Congela e restaura o vault por cópia direta de bytes. |
-| **F20** | Sugestão de wikilinks | `relate` | Rankeia notas similares e adensa o grafo com `--apply`. |
+| **F11** ⭐ | Real-time plan/context/cost usage | `statusline.mjs` (standalone) | The Claude Code footer shows `plan · ctx · $ · mem` per turn. |
+| **F12** | Usage/cost ledger | `usage` | Aggregates cost/tokens from transcripts by day and project. |
+| **F13** | Live tail of the vault | `watch` | Prints each new note live via `fs.watch`. |
+| **F14** | Session digest | `digest` | Markdown summary of the window, grouped by agent/type. |
+| **F15** | Health check | `doctor` | Diagnoses vault, settings, hooks, and statusline. |
+| **F16** | Central configuration | `config` | Reads/writes preferences in the vault's `config.json`. |
+| **F17** | Note templates | `template` | Creates a note from a skeleton with placeholders. |
+| **F18** | Pin / highlight | `pin` | Marks key notes so they sort first in searches. |
+| **F19** | Snapshot / checkpoint | `snapshot` | Freezes and restores the vault by direct byte copy. |
+| **F20** | Wikilink suggestion | `relate` | Ranks similar notes and densifies the graph with `--apply`. |
 
-**F11 (a feature-estrela)** é a única que **não** é um comando do registry: `statusline.mjs` é um
-**entrypoint standalone**. O Claude Code entrega o estado da sessão como **JSON via stdin** a cada
-refresh, e o script emite **uma única linha** no rodapé com o uso do plano (`rate_limits` 5h/7d), a %
-da janela de contexto (`context_window`) e o custo USD da sessão (`cost.total_cost_usd`) — exatamente
-o que o `/usage` mostra, agora passivo. É standalone por três razões: roda a **cada refresh** (não
-pode pagar `loadCommands()` de ~34 módulos por turno), **precisa de stdin** (o `ctx` dos comandos não
-expõe stdin) e emite **1 linha** (não o shape `{ lines, data }` do registry). Degrada e **sai 0** em
-qualquer erro, jamais derrubando a render.
+**F11 (the flagship feature)** is the only one that is **not** a registry command: `statusline.mjs` is a
+**standalone entrypoint**. Claude Code delivers the session state as **JSON via stdin** on each
+refresh, and the script emits **a single line** in the footer with the plan usage (`rate_limits` 5h/7d), the %
+of the context window (`context_window`), and the session's USD cost (`cost.total_cost_usd`) — exactly
+what `/usage` shows, now passive. It is standalone for three reasons: it runs on **every refresh** (it cannot
+afford `loadCommands()` of ~34 modules per turn), it **needs stdin** (the commands' `ctx` does not
+expose stdin), and it emits **1 line** (not the `{ lines, data }` shape of the registry). It degrades and **exits 0** on
+any error, never bringing down the render.
 
 ---
 
-## 7. As 34 Tools + statusline (assinaturas canônicas)
+## 7. The 34 Tools + statusline (canonical signatures)
 
-> Convenção: `<ref>` é uma referência frouxa resolvida por `resolveNotes` (basename exato →
-> fragmento de slug → substring de nome/summary). Flags de filtro são opcionais e combináveis.
+> Convention: `<ref>` is a loose reference resolved by `resolveNotes` (exact basename →
+> slug fragment → name/summary substring). Filter flags are optional and combinable.
 
-| # | Tool | Assinatura | Feature |
+| # | Tool | Signature | Feature |
 | --- | --- | --- | --- |
 | 1 | `list` | `list [--type t][--tag x][--agent a][--project p][--since YYYY-MM-DD][--limit n][--archived][--all][--json]` | F2 |
 | 2 | `show` | `show <ref> [--json]` | F2 |
@@ -366,92 +366,92 @@ qualquer erro, jamais derrubando a render.
 | 6 | `retag` | `retag <old> <new> [--all] [--json]` | F3 |
 | 7 | `backlinks` | `backlinks <ref> [--all] [--json]` | F4 |
 | 8 | `links` | `links <ref> [--all] [--json]` | F4 |
-| 9 | `graph` | `graph [--all] [--json]`  (saída Mermaid) | F4 |
+| 9 | `graph` | `graph [--all] [--json]`  (Mermaid output) | F4 |
 | 10 | `orphans` | `orphans [--all] [--json]` | F4 |
 | 11 | `stats` | `stats [--all] [--json]` | F5 |
 | 12 | `timeline` | `timeline [--since YYYY-MM-DD] [--limit n] [--all] [--json]` | F5 |
-| 13 | `validate` | `validate [--all] [--json]`  (exit 1 se houver erros) | F6 |
+| 13 | `validate` | `validate [--all] [--json]`  (exit 1 if there are errors) | F6 |
 | 14 | `dedupe` | `dedupe [--all] [--json]` | F7 |
-| 15 | `prune` | `prune [--apply] [--all] [--json]`  (dry-run por padrão) | F7 |
+| 15 | `prune` | `prune [--apply] [--all] [--json]`  (dry-run by default) | F7 |
 | 16 | `archive` | `archive <ref> [--restore]` | F8 |
 | 17 | `move` | `move <ref> <targetProject>` | F8 |
-| 18 | `rename` | `rename <ref> <novo titulo>` | F8 |
+| 18 | `rename` | `rename <ref> <new title>` | F8 |
 | 19 | `export` | `export [--format json\|md] [--out file] [--all]` | F9 |
 | 20 | `import` | `import <file> [--project p]` | F9 |
 
-> Tools que mutam (5, 6, 15, 16, 17, 18, 20) reescrevem notas via `formatNote` para preservar
-> frontmatter desconhecido. Em caso de `<ref>` ambíguo (vários matches) reportam a ambiguidade
-> em vez de adivinhar. `move` e `rename` ainda têm **guarda anti-clobber**: se o nome de destino
-> já pertence a outra nota, abortam com erro em vez de sobrescrever (correção da revisão adversarial,
-> Fase 3 — evitava perda silenciosa de dados).
+> Mutating tools (5, 6, 15, 16, 17, 18, 20) rewrite notes via `formatNote` to preserve
+> unknown frontmatter. In case of an ambiguous `<ref>` (several matches) they report the ambiguity
+> instead of guessing. `move` and `rename` also have an **anti-clobber guard**: if the destination name
+> already belongs to another note, they abort with an error instead of overwriting (fix from the adversarial
+> review, Phase 3 — it avoided silent data loss).
 
-### As 9 tools da Fase 2 (F12–F20) — complemento
+### The 9 Phase 2 tools (F12–F20) — complement
 
-> Mesmo contrato canônico da base (`{ name, summary, usage, run(ctx) }`), auto-descobertas pelo
-> registry. Tools de leitura populam `data` para o `--json` transversal (F10); as que mutam
-> reescrevem via `formatNote`. Detalhamento em [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md).
+> Same canonical contract as the base (`{ name, summary, usage, run(ctx) }`), auto-discovered by the
+> registry. Read tools populate `data` for the cross-cutting `--json` (F10); mutating ones
+> rewrite via `formatNote`. Breakdown in [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md).
 
-| # | Tool | Assinatura | Feature | Muta? |
+| # | Tool | Signature | Feature | Mutates? |
 | --- | --- | --- | --- | --- |
-| 26 | `usage` | `usage [--since YYYY-MM-DD] [--limit n] [--save] [--json]` | F12 | só com `--save` (nota) |
-| 27 | `watch` | `watch [--all]`  (stream contínuo) | F13 | não |
-| 28 | `digest` | `digest [--since YYYY-MM-DD] [--save] [--json]` | F14 | só com `--save` (nota) |
-| 29 | `doctor` | `doctor [--json]`  (exit 1 se algum `✗`) | F15 | não |
+| 26 | `usage` | `usage [--since YYYY-MM-DD] [--limit n] [--save] [--json]` | F12 | only with `--save` (note) |
+| 27 | `watch` | `watch [--all]`  (continuous stream) | F13 | no |
+| 28 | `digest` | `digest [--since YYYY-MM-DD] [--save] [--json]` | F14 | only with `--save` (note) |
+| 29 | `doctor` | `doctor [--json]`  (exit 1 if any `✗`) | F15 | no |
 | 30 | `config` | `config list \| get <k> \| set <k> <v> [--json]` | F16 | `set` → `config.json` |
-| 31 | `template` | `template list \| template <nome> "<título>" [--json]` | F17 | cria nota |
-| 32 | `pin` | `pin <ref> [--off] \| pin --list [--json]` | F18 | sim (frontmatter) |
-| 33 | `snapshot` | `snapshot [--list] [--restore <id>] [--json]` | F19 | cria / `--restore` destrutivo |
-| 34 | `relate` | `relate <ref> [--apply] [--json]` | F20 | só com `--apply` (`related`) |
+| 31 | `template` | `template list \| template <name> "<title>" [--json]` | F17 | creates note |
+| 32 | `pin` | `pin <ref> [--off] \| pin --list [--json]` | F18 | yes (frontmatter) |
+| 33 | `snapshot` | `snapshot [--list] [--restore <id>] [--json]` | F19 | creates / `--restore` destructive |
+| 34 | `relate` | `relate <ref> [--apply] [--json]` | F20 | only with `--apply` (`related`) |
 
-> `watch` (stream contínuo) fica **fora** do contrato `lines/data` — exceção documentada, análoga ao
-> statusline. `snapshot --restore` é destrutivo: exige a flag explícita e faz um snapshot de segurança
-> antes (invariante não-destrutivo). `usage`/`digest` são read-only por padrão e só persistem nota com
-> `--save`; `relate` só toca `related` com `--apply`.
+> `watch` (continuous stream) is **outside** the `lines/data` contract — a documented exception, analogous to the
+> statusline. `snapshot --restore` is destructive: it requires the explicit flag and takes a safety snapshot
+> beforehand (non-destructive invariant). `usage`/`digest` are read-only by default and only persist a note with
+> `--save`; `relate` only touches `related` with `--apply`.
 
-### `statusline.mjs` — entrypoint standalone (F11, fora do registry)
+### `statusline.mjs` — standalone entrypoint (F11, outside the registry)
 
-| Entrypoint | Assinatura | Feature | Muta? |
+| Entrypoint | Signature | Feature | Mutates? |
 | --- | --- | --- | --- |
-| ⭐ `statusline.mjs` | `statusline.mjs [--install \| --uninstall \| --demo]` | F11 | só `--install`/`--uninstall` (bloco `statusLine` do `settings.json`) |
+| ⭐ `statusline.mjs` | `statusline.mjs [--install \| --uninstall \| --demo]` | F11 | only `--install`/`--uninstall` (the `statusLine` block of `settings.json`) |
 
-Não é uma tool de registry: lê o payload do Claude Code via **stdin** e emite **1 linha** no rodapé
-(gatilho, entrada e saída próprios — ver §6, seção 2 do doc da Fase 2). Os subcomandos de instalação
-fazem **merge não-destrutivo e idempotente** em `~/.claude/settings.json` (espelhando o `install.mjs`
-da base); `--demo` roda o pipeline com um payload de exemplo embutido, sem precisar do Claude Code.
+It is not a registry tool: it reads the Claude Code payload via **stdin** and emits **1 line** in the footer
+(its own trigger, input, and output — see §6, section 2 of the Phase 2 doc). The install subcommands
+perform a **non-destructive, idempotent merge** in `~/.claude/settings.json` (mirroring the base's `install.mjs`);
+`--demo` runs the pipeline with an embedded sample payload, without needing Claude Code.
 
 ---
 
-## 8. Testes
+## 8. Tests
 
-A suíte usa **`node:test`** nativo (`node --test "memory-team/test/*.test.mjs"`, script
-`npm test`) — zero dependências, coerente com o produto. **Sem mocks**: cada teste cria um vault
-temporário real sob `os.tmpdir()` e exercita o filesystem de verdade, só isolado.
+The suite uses native **`node:test`** (`node --test "memory-team/test/*.test.mjs"`, the
+`npm test` script) — zero dependencies, consistent with the product. **No mocks**: each test creates a
+temporary real vault under `os.tmpdir()` and exercises the real filesystem, just isolated.
 
-### Utilitários (`test/_helpers.mjs`)
+### Utilities (`test/_helpers.mjs`)
 
-| Helper | Uso |
+| Helper | Use |
 | --- | --- |
-| `makeVault()` | Cria um root temporário (`mem-vault-…`), retorna path forward-slash. |
-| `cleanup(root)` | `rmSync` recursivo, fail-safe. |
-| `run(name, {pos,opt,root,project})` | Roda um comando **in-process** com `ctx` injetado (rápido; testa a lógica). |
-| `runCli(args, {root,project})` | Roda o **CLI real** como subprocesso via `MEMORY_VAULT`/`MEMORY_PROJECT` (e2e; testa o dispatcher + registry + render). |
-| `seedNote(root, project, sub, file, fm, body)` | Semeia uma nota direto no disco, **bypassando** `save` — para testes do lado de leitura. |
+| `makeVault()` | Creates a temporary root (`mem-vault-…`), returns a forward-slash path. |
+| `cleanup(root)` | Recursive `rmSync`, fail-safe. |
+| `run(name, {pos,opt,root,project})` | Runs a command **in-process** with an injected `ctx` (fast; tests the logic). |
+| `runCli(args, {root,project})` | Runs the **real CLI** as a subprocess via `MEMORY_VAULT`/`MEMORY_PROJECT` (e2e; tests the dispatcher + registry + render). |
+| `seedNote(root, project, sub, file, fm, body)` | Seeds a note directly to disk, **bypassing** `save` — for read-side tests. |
 
-### Padrão de cobertura por tool
+### Coverage pattern per tool
 
-Cada tool nova deve ter, no mínimo:
+Each new tool must have, at a minimum:
 
-- **happy path in-process** (`run`) com asserts em `res.ok`/`res.data`;
-- **e2e via `runCli`** quando o comportamento depende do dispatcher (exit code, `--json`, render);
-- **ramos de borda**: `<ref>` inexistente, `<ref>` ambíguo, vault vazio, flags ausentes;
-- para tools que **mutam**: asserto de que o frontmatter desconhecido sobrevive ao round-trip;
-- para `validate`/`prune`: asserto do **exit code** e do modo **dry-run vs `--apply`**.
+- **happy path in-process** (`run`) with asserts on `res.ok`/`res.data`;
+- **e2e via `runCli`** when the behavior depends on the dispatcher (exit code, `--json`, render);
+- **edge branches**: nonexistent `<ref>`, ambiguous `<ref>`, empty vault, missing flags;
+- for **mutating** tools: an assert that unknown frontmatter survives the round-trip;
+- for `validate`/`prune`: an assert of the **exit code** and of the **dry-run vs `--apply`** mode.
 
 ```mermaid
 flowchart LR
   TEST["*.test.mjs"] -->|"run() in-process"| CMD["command.run(ctx)"]
   TEST -->|"runCli() subprocess"| DISP["memory.mjs (dispatcher)"]
-  TEST -->|"seedNote()"| TMP[("vault temp<br/>os.tmpdir()")]
+  TEST -->|"seedNote()"| TMP[("temp vault<br/>os.tmpdir()")]
   CMD --> TMP
   DISP --> TMP
   TEST -->|"cleanup()"| GONE["rmSync"]
@@ -459,24 +459,24 @@ flowchart LR
 
 ---
 
-## 9. Princípios de design (invariantes a manter)
+## 9. Design principles (invariants to maintain)
 
-1. **Zero dependências.** Só `node:*` builtins. Vale também para testes.
-2. **Data layer puro.** `lib.mjs`/`notes.mjs` nunca imprimem nem dão `exit` — só os comandos e o
-   dispatcher fazem I/O de console.
-3. **Comandos isolados e testáveis.** Toda dependência externa entra pelo `ctx`; nada de ler
-   `process.env` dentro de um `run`.
-4. **Adição sem edição central.** Nova tool = novo arquivo em `commands/`. O registry resolve.
-5. **Não-destrutivo por padrão.** Operações perigosas (`prune`) são dry-run até `--apply`;
-   `archive` move, não apaga.
-6. **Round-trip estável.** Mutações reescrevem via `formatNote` preservando campos desconhecidos.
-7. **Fail-open nos hooks, fail-loud no CLI.** Hooks nunca travam o time por bug; o CLI sinaliza
-   erro claramente.
-8. **Tempo real é barato e à prova de falha (Fase 2).** As features ao vivo (statusline, watch) rodam
-   em uma passada e sem dependência nova. O statusline consome o payload já pronto (`rate_limits`,
-   `context_window`, `cost`) e só toca o transcript no fallback — e, mesmo aí, lê só a cauda; nunca
-   usa `--all`.
-9. **O statusline nunca derruba a render do Claude Code (Fase 2).** Qualquer erro (stdin vazio, JSON
-   inválido, transcript ausente, exceção) degrada para um fallback curto e **sai 0** — nunca lança
-   para o Claude Code, nunca trava. É a única regra que sobrepõe o "fail-loud no CLI" (princípio 7),
-   por estar no caminho crítico da UI.
+1. **Zero dependencies.** Only `node:*` builtins. Applies to tests too.
+2. **Pure data layer.** `lib.mjs`/`notes.mjs` never print nor `exit` — only the commands and the
+   dispatcher do console I/O.
+3. **Isolated, testable commands.** Every external dependency enters via `ctx`; no reading
+   `process.env` inside a `run`.
+4. **Addition without central editing.** A new tool = a new file in `commands/`. The registry resolves it.
+5. **Non-destructive by default.** Dangerous operations (`prune`) are dry-run until `--apply`;
+   `archive` moves, does not delete.
+6. **Stable round-trip.** Mutations rewrite via `formatNote` preserving unknown fields.
+7. **Fail-open in hooks, fail-loud in the CLI.** Hooks never lock up the team over a bug; the CLI signals
+   errors clearly.
+8. **Real-time is cheap and fail-proof (Phase 2).** The live features (statusline, watch) run
+   in a single pass and with no new dependency. The statusline consumes the ready-made payload (`rate_limits`,
+   `context_window`, `cost`) and only touches the transcript in the fallback — and even then, it reads only the tail; it never
+   uses `--all`.
+9. **The statusline never brings down the Claude Code render (Phase 2).** Any error (empty stdin, invalid
+   JSON, missing transcript, exception) degrades to a short fallback and **exits 0** — it never throws
+   to Claude Code, never locks up. It is the one rule that overrides "fail-loud in the CLI" (principle 7),
+   because it is on the UI's critical path.

@@ -1,11 +1,11 @@
 // changelog (F39) — generate a markdown changelog from decision/learning notes, grouped by
-// created date (descending), each entry badged by type ([decisão]/[aprendizado]). `--since`
+// created date (descending), each entry badged by type ([decision]/[learning]). `--since`
 // filters by created>=since; `--save` persists as a `memory` note (tag changelog). Determinism:
 // the save date falls back to opt.today→today() so tests can pin it. Read-only without --save.
 import { collectNotes, saveNote } from '../notes.mjs';
 import { today } from '../lib.mjs';
 
-const BADGE = { decision: '[decisão]', learning: '[aprendizado]' };
+const BADGE = { decision: '[decision]', learning: '[learning]' };
 
 export default {
   name: 'changelog',
@@ -36,14 +36,14 @@ export default {
     // Build the markdown body once (reused by terminal output and --save).
     const md = [];
     if (!entries.length) {
-      md.push('# changelog', '', '(nada na janela)');
+      md.push('# changelog', '', '(nothing in the window)');
     } else {
       md.push('# changelog', '');
       let curDate = null;
       for (const e of entries) {
         if (e.date !== curDate) {
           if (curDate !== null) md.push('');
-          md.push(`## ${e.date || '(sem data)'}`);
+          md.push(`## ${e.date || '(no date)'}`);
           curDate = e.date;
         }
         const badge = BADGE[e.type] || `[${e.type}]`;

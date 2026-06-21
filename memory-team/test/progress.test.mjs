@@ -16,13 +16,13 @@ before(() => {
   root = makeVault();
   seedNote(root, PROJ, 'memory', 'plan-done.md',
     { type: 'memory', project: PROJ, agent: 'x', summary: 's', tags: ['plan'], created: '2026-01-01' },
-    '## Passos\n- [x] um\n- [x] dois');
+    '## Steps\n- [x] one\n- [x] two');
   seedNote(root, PROJ, 'memory', 'plan-open.md',
     { type: 'memory', project: PROJ, agent: 'x', summary: 's', tags: ['plan'], created: '2026-01-02' },
-    '## Passos\n- [x] feito\n- [ ] pendente');
+    '## Steps\n- [x] done\n- [ ] pending');
   seedNote(root, PROJ, 'memory', 'loose.md',
     { type: 'memory', project: PROJ, agent: 'x', summary: 's', tags: ['misc'], created: '2026-01-03' },
-    '- [x] solto');
+    '- [x] standalone');
   seedNote(root, PROJ, 'memory', 'blocked.md',
     { type: 'memory', project: PROJ, agent: 'x', summary: 's', tags: ['blocker'], created: '2026-01-04' }, 'b');
 });
@@ -67,7 +67,7 @@ test('progress: empty vault → zeros, no divide-by-zero, exit 0', async () => {
 test('progress: a plan with no checkboxes is not counted complete', async () => {
   seedNote(root, 'progress-noboxes', 'memory', 'empty-plan.md',
     { type: 'memory', project: 'progress-noboxes', agent: 'x', summary: 's', tags: ['plan'], created: '2026-02-01' },
-    'sem nenhum checkbox aqui');
+    'no checkbox at all here');
   const res = await run('progress', { project: 'progress-noboxes', root });
   assert.equal(res.data.plans.total, 1);
   assert.equal(res.data.plans.complete, 0);

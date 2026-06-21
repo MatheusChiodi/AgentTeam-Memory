@@ -1,296 +1,295 @@
-# AgentTeam-Memory — User Stories (Fase 2)
+# AgentTeam-Memory — User Stories (Phase 2)
 
-> Segunda onda de expansão: **observabilidade em tempo real e integração nativa com o
-> Claude Code**. Continua a numeração da [Fase 0/1](./USER-STORIES.md) — começa em **US-033**
-> (a base vai até US-032) e em **F11** (a base vai até F10).
+> Second wave of expansion: **real-time observability and native integration with
+> Claude Code**. Continues the numbering of [Phase 0/1](./USER-STORIES.md) — starts at **US-033**
+> (the base goes up to US-032) and at **F11** (the base goes up to F10).
 >
-> Tema da fase: o vault deixa de ser só um arquivo morto consultável e passa a **transbordar para
-> a própria interface do Claude Code** (statusline), a **registrar o custo/uso das sessões** e a
-> oferecer **ferramentas de operação ao vivo** (watch, digest, doctor). Referência de arquitetura:
+> Phase theme: the vault stops being just a queryable dead archive and starts to **overflow into
+> the Claude Code interface itself** (statusline), to **record session cost/usage** and to
+> offer **live operation tools** (watch, digest, doctor). Architecture reference:
 > [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md).
 
-## Convenção (herdada da Fase 1)
+## Convention (inherited from Phase 1)
 
-`<ref>` = referência frouxa a uma nota (basename exato → fragmento de slug → substring de
-nome/summary), resolvida por `resolveNotes`. Toda tool de leitura aceita `--json` e, nesse modo,
-emite **apenas** `res.data`. Mutações reescrevem via `formatNote` preservando frontmatter desconhecido.
+`<ref>` = loose reference to a note (exact basename → slug fragment → substring of
+name/summary), resolved by `resolveNotes`. Every read tool accepts `--json` and, in that mode,
+emits **only** `res.data`. Mutations rewrite via `formatNote` preserving unknown frontmatter.
 
-## Mapa da fase
+## Phase map
 
 | # | Feature | Tool/entrypoint | US |
 | --- | --- | --- | --- |
-| **F11** ⭐ | Orçamento e uso **em tempo real** no statusline do Claude Code | `statusline.mjs` (standalone) | US-033 · US-034 · US-035 · US-036 |
-| **F12** | Ledger de uso/custo (histórico das sessões) | `usage` | US-037 |
-| **F13** | Live tail do vault (acompanhar notas ao vivo) | `watch` | US-038 |
-| **F14** | Digest de sessão (sumário automático de uma janela) | `digest` | US-039 |
-| **F15** | Health check da instalação | `doctor` | US-040 |
-| **F16** | Configuração central do memory-team | `config` | US-041 |
-| **F17** | Templates de nota | `template` | US-042 |
-| **F18** | Pin / destaque de notas | `pin` | US-043 |
-| **F19** | Snapshot / checkpoint do vault | `snapshot` | US-044 |
-| **F20** | Sugestão automática de wikilinks | `relate` | US-045 |
-| transversal | Tempo real barato/à prova de falha · testes | — | US-046 · US-047 |
+| **F11** ⭐ | Budget and **real-time** usage in the Claude Code statusline | `statusline.mjs` (standalone) | US-033 · US-034 · US-035 · US-036 |
+| **F12** | Usage/cost ledger (session history) | `usage` | US-037 |
+| **F13** | Live tail of the vault (follow notes live) | `watch` | US-038 |
+| **F14** | Session digest (automatic summary of a window) | `digest` | US-039 |
+| **F15** | Health check of the installation | `doctor` | US-040 |
+| **F16** | Central memory-team configuration | `config` | US-041 |
+| **F17** | Note templates | `template` | US-042 |
+| **F18** | Pin / highlight notes | `pin` | US-043 |
+| **F19** | Vault snapshot / checkpoint | `snapshot` | US-044 |
+| **F20** | Automatic wikilink suggestion | `relate` | US-045 |
+| cross-cutting | Real time cheap/fail-proof · tests | — | US-046 · US-047 |
 
 ---
 
-## F11 — Orçamento e uso em tempo real (⭐ a feature-estrela)
+## F11 — Budget and real-time usage (⭐ the flagship feature)
 
-> **Dor:** hoje, para saber quanto do plano/contexto já consumi numa sessão do Claude Code,
-> preciso rodar `/usage` manualmente, sair do fluxo e ler um relatório. Quero ver isso **passivamente,
-> sempre**, no rodapé da própria CLI — que se atualiza a cada turno.
+> **Pain:** today, to know how much of the plan/context I have already consumed in a Claude Code
+> session, I have to run `/usage` manually, leave the flow and read a report. I want to see this **passively,
+> always**, in the footer of the CLI itself — which updates every turn.
 >
-> **Mecanismo:** o Claude Code suporta um **statusLine** customizado (`settings.json → statusLine`):
-> um comando que recebe um JSON de estado via **stdin** a cada atualização da tela e imprime **uma
-> linha** que o Claude Code renderiza no rodapé. É o único ponto de extensão que entrega
-> "informação passiva e contínua". A tool é, portanto, um **entrypoint standalone** (`statusline.mjs`),
-> não um comando do registry (ver arquitetura — motivo: performance/sem stdin no `ctx`).
+> **Mechanism:** Claude Code supports a custom **statusLine** (`settings.json → statusLine`):
+> a command that receives a state JSON via **stdin** on every screen update and prints **one
+> line** that Claude Code renders in the footer. It is the only extension point that delivers
+> "passive and continuous information". The tool is, therefore, a **standalone entrypoint** (`statusline.mjs`),
+> not a registry command (see architecture — reason: performance/no stdin in `ctx`).
 >
-> **O payload já entrega o que o `/usage` mostra.** Verificado na doc oficial: o JSON do statusLine
-> traz `rate_limits.five_hour.used_percentage` e `rate_limits.seven_day.used_percentage` (= o **uso do
-> plano** da assinatura — a dor exata) e um `resets_at` (epoch) por janela; traz também `context_window`
-> (`used_percentage`, `context_window_size`, `current_usage.{input,output,cache_*}_tokens`) e
-> `cost.total_cost_usd`. Logo, **não é preciso parsear o transcript** no caminho feliz — só como
-> fallback para versões antigas (`< 2.1.132`).
+> **The payload already delivers what `/usage` shows.** Verified in the official docs: the statusLine JSON
+> carries `rate_limits.five_hour.used_percentage` and `rate_limits.seven_day.used_percentage` (= the **plan
+> usage** of the subscription — the exact pain) and a `resets_at` (epoch) per window; it also carries `context_window`
+> (`used_percentage`, `context_window_size`, `current_usage.{input,output,cache_*}_tokens`) and
+> `cost.total_cost_usd`. Therefore, **there is no need to parse the transcript** in the happy path — only as a
+> fallback for old versions (`< 2.1.132`).
 >
-> **Ressalva honesta (vira critério de aceite, não promessa furada):** `rate_limits` só está presente
-> para contas **Claude.ai Pro/Max** e **após a 1ª resposta** da sessão; com **API key / Bedrock /
-> Vertex** o campo não existe (esses planos não têm janela de 5h/7d). Quando ausente, o statusline
-> **degrada** para `context_window` + `cost` e sinaliza o plano como `n/a`.
+> **Honest caveat (becomes an acceptance criterion, not a broken promise):** `rate_limits` is only present
+> for **Claude.ai Pro/Max** accounts and **after the 1st response** of the session; with **API key / Bedrock /
+> Vertex** the field does not exist (those plans have no 5h/7d window). When absent, the statusline
+> **degrades** to `context_window` + `cost` and signals the plan as `n/a`.
 
-### US-033 — Ver o uso do plano em tempo real, sem rodar `/usage`
-**Como** usuário Claude.ai Pro/Max **quero** que o rodapé mostre, sempre e atualizado a cada turno,
-**quanto do meu plano já gastei** (janela de 5h e de 7 dias) **para** não precisar interromper o fluxo
-com `/usage`.
+### US-033 — See plan usage in real time, without running `/usage`
+**As a** Claude.ai Pro/Max user **I want** the footer to show, always and updated every turn,
+**how much of my plan I have already spent** (5h and 7-day windows) **so that** I do not have to interrupt the flow
+with `/usage`.
 - **Tool:** `statusline.mjs` (standalone) · **Feature:** F11
-- **Aceite:**
-  - Lê o JSON de status do **stdin** e imprime **uma única linha** em stdout, sem ruído em stderr.
-  - Segmento `plan:` mostra `rate_limits.five_hour.used_percentage` e
-    `rate_limits.seven_day.used_percentage` (ex.: `plan 5h 23% · 7d 41%`), que é exatamente o que o
-    `/usage` reporta — a dor literal resolvida.
-  - Mostra opcionalmente o `resets_at` de cada janela como tempo relativo ("⟳2h13"). `resets_at` é
-    **epoch em segundos**; o tempo é relativo a `Date.now()` com **clamp**: janela já reaberta mostra
-    "agora", nunca tempo negativo (aceite determinístico).
-  - **Degradação por janela, independente** (A6): cada janela (`five_hour`, `seven_day`) só entra se
-    trouxer `used_percentage` finito — uma presente e outra ausente não vaza `undefined%`.
-  - **Degradação total honesta:** quando `rate_limits` está ausente por inteiro (API key / Bedrock /
-    Vertex, ou antes da 1ª resposta), o segmento vira `plan n/a` e o foco recai sobre contexto + custo
-    (US-034) — sem inventar número de plano.
-  - Resiliente: stdin vazio/JSON inválido → fallback curto e **sai 0** (nunca derruba a render do
-    Claude Code, nunca trava). Tudo em **uma passada**, **zero dependências**.
+- **Acceptance:**
+  - Reads the status JSON from **stdin** and prints **a single line** to stdout, with no noise on stderr.
+  - The `plan:` segment shows `rate_limits.five_hour.used_percentage` and
+    `rate_limits.seven_day.used_percentage` (e.g.: `plan 5h 23% · 7d 41%`), which is exactly what
+    `/usage` reports — the literal pain solved.
+  - Optionally shows the `resets_at` of each window as relative time ("⟳2h13"). `resets_at` is
+    **epoch in seconds**; the time is relative to `Date.now()` with a **clamp**: an already-reopened window shows
+    "now", never negative time (deterministic acceptance).
+  - **Per-window degradation, independent** (A6): each window (`five_hour`, `seven_day`) only enters if
+    it carries a finite `used_percentage` — one present and the other absent does not leak `undefined%`.
+  - **Honest total degradation:** when `rate_limits` is entirely absent (API key / Bedrock /
+    Vertex, or before the 1st response), the segment becomes `plan n/a` and the focus shifts to context + cost
+    (US-034) — without inventing a plan number.
+  - Resilient: empty stdin/invalid JSON → short fallback and **exits 0** (never brings down the render of
+    Claude Code, never hangs). All in **one pass**, **zero dependencies**.
 
-### US-034 — Enxergar contexto e custo junto, com barra e alertas de teto
-**Como** usuário **quero** ver, ao lado do plano, quanto da **janela de contexto** e quanto de
-**custo** já consumi, com uma barra e cores que mudam perto do limite **para** perceber o risco de
-estourar antes que aconteça.
+### US-034 — See context and cost together, with a bar and ceiling alerts
+**As a** user **I want** to see, alongside the plan, how much of the **context window** and how much
+**cost** I have already consumed, with a bar and colors that change near the limit **so that** I notice the risk of
+overflowing before it happens.
 - **Tool:** `statusline.mjs` · **Feature:** F11
-- **Aceite:**
-  - **Contexto** prioriza **recalcular** a partir dos tokens absolutos `context_window.current_usage`
-    (`input + cache_read + cache_creation`) sobre o limite correto; só então usa `used_percentage`; e por
-    fim, na ausência de `context_window` (versão `< 2.1.132`), o **fallback** soma a última `usage` do
+- **Acceptance:**
+  - **Context** prioritizes **recomputing** from the absolute tokens `context_window.current_usage`
+    (`input + cache_read + cache_creation`) over the correct limit; only then uses `used_percentage`; and
+    finally, in the absence of `context_window` (version `< 2.1.132`), the **fallback** sums the last `usage` of the
     `transcript_path`.
-  - **Limite da janela:** `[1m]` no `model.id` tem **precedência** = 1M. Motivo (verificado pelo
-    researcher): `context_window_size` do payload vem `200000` mesmo em janela estendida (bug Claude Code
-    #36725); confiar nele inflaria o `%` em 5×. Sem `[1m]`, usa `context_window_size`; senão 200k, com
-    `exceeds_200k_tokens` como sinal redundante. O limite custom é configurável (F16/US-041).
-  - **Custo** usa `cost.total_cost_usd` **quando o payload o expuser**; ausente → omite o segmento `$`.
-  - Renderiza uma **barra** textual do uso de contexto (ex.: `[█████░░░░░] 53%`).
-  - **Limiares** de severidade (default `warn=70%`, `danger=90%`, vindos da config — F16): neutro,
-    atenção e crítico. Cores **ANSI por padrão** (o Claude Code renderiza ANSI no rodapé), degradando
-    para texto puro sob `NO_COLOR`/`TERM=dumb` (N5).
+  - **Window limit:** `[1m]` in the `model.id` has **precedence** = 1M. Reason (verified by the
+    researcher): `context_window_size` from the payload comes as `200000` even in an extended window (Claude Code
+    bug #36725); trusting it would inflate the `%` by 5×. Without `[1m]`, uses `context_window_size`; otherwise 200k, with
+    `exceeds_200k_tokens` as a redundant signal. The custom limit is configurable (F16/US-041).
+  - **Cost** uses `cost.total_cost_usd` **when the payload exposes it**; absent → omits the `$` segment.
+  - Renders a textual **bar** of the context usage (e.g.: `[█████░░░░░] 53%`).
+  - Severity **thresholds** (default `warn=70%`, `danger=90%`, coming from the config — F16): neutral,
+    attention and critical. **ANSI colors by default** (Claude Code renders ANSI in the footer), degrading
+    to plain text under `NO_COLOR`/`TERM=dumb` (N5).
 
-### US-035 — Ver o contexto do memory-team junto do consumo
-**Como** teammate **quero** que o rodapé também mostre o projeto detectado, se o enforcement está
-ativo e quantas notas já existem **para** confirmar, de relance, que estou escrevendo memória no
-lugar certo.
+### US-035 — See the memory-team context alongside consumption
+**As a** teammate **I want** the footer to also show the detected project, whether enforcement is
+active and how many notes already exist **so that** I confirm, at a glance, that I am writing memory in the
+right place.
 - **Tool:** `statusline.mjs` · **Feature:** F11
-- **Aceite:**
-  - Segmento `mem:` com **projeto** detectado (de `workspace.current_dir`/cwd via `lib.mjs`),
-    flag **enabled** (marcador `.memory-team`) e **contagem de notas** do projeto + global.
-  - Reaproveita `lib.mjs`/`notes.mjs` (sem reimplementar resolução de vault) — leitura barata,
-    sem varrer o vault inteiro a cada turno (conta por projeto, não `--all`).
-  - A composição dos segmentos é **estável e ordenada** (mem · contexto · custo · modelo), separada
-    por um delimitador legível.
+- **Acceptance:**
+  - A `mem:` segment with the **project** detected (from `workspace.current_dir`/cwd via `lib.mjs`),
+    the **enabled** flag (`.memory-team` marker) and the **note count** of the project + global.
+  - Reuses `lib.mjs`/`notes.mjs` (without reimplementing vault resolution) — cheap reading,
+    without scanning the whole vault every turn (counts per project, not `--all`).
+  - The composition of the segments is **stable and ordered** (mem · context · cost · model), separated
+    by a readable delimiter.
 
-### US-036 — Instalar/remover o statusline sem editar JSON à mão
-**Como** mantenedor **quero** rodar um comando que registre (ou remova) o statusline no meu
-`settings.json` **para** ativar a feature sem mexer no arquivo manualmente e arriscar quebrá-lo.
-- **Tool:** `statusline.mjs --install` / `--uninstall` (e `--demo`) · **Feature:** F11
-- **Aceite:**
-  - `--install` faz **merge não-destrutivo** em `~/.claude/settings.json` adicionando o bloco
-    `statusLine` que aponta para este script; preserva o resto do arquivo; é **idempotente**.
-  - `--uninstall` remove apenas o bloco `statusLine` que o memory-team escreveu.
-  - `--demo` roda o pipeline com um payload de exemplo embutido (sem precisar do Claude Code),
-    imprimindo a linha como ela apareceria — serve de teste manual e de doc viva.
-  - Sem `settings.json`, cria um mínimo válido; JSON existente inválido → erro claro, **não** sobrescreve.
+### US-036 — Install/remove the statusline without editing JSON by hand
+**As a** maintainer **I want** to run a command that registers (or removes) the statusline in my
+`settings.json` **so that** I activate the feature without touching the file manually and risk breaking it.
+- **Tool:** `statusline.mjs --install` / `--uninstall` (and `--demo`) · **Feature:** F11
+- **Acceptance:**
+  - `--install` does a **non-destructive merge** into `~/.claude/settings.json` adding the `statusLine`
+    block that points to this script; preserves the rest of the file; it is **idempotent**.
+  - `--uninstall` removes only the `statusLine` block that memory-team wrote.
+  - `--demo` runs the pipeline with an embedded sample payload (without needing Claude Code),
+    printing the line as it would appear — serving as a manual test and as living documentation.
+  - Without `settings.json`, creates a minimal valid one; an invalid existing JSON → clear error, does **not** overwrite.
 
 ---
 
-## F12 — Ledger de uso/custo (histórico)
+## F12 — Usage/cost ledger (history)
 
-### US-037 — Agregar o custo e os tokens das minhas sessões
-**Como** usuário **quero** rodar `usage` **para** ver, de forma agregada, quanto custaram e quantos
-tokens consumiram minhas sessões (por dia/projeto) **para** ter o histórico que o statusline mostra
-só "agora".
+### US-037 — Aggregate the cost and tokens of my sessions
+**As a** user **I want** to run `usage` **so that** I see, in aggregate, how much my sessions cost and how many
+tokens they consumed (per day/project) **so that** I have the history that the statusline only shows
+"right now".
 - **Tool:** `usage` · **Feature:** F12
-- **Aceite:**
-  - Varre os transcripts de sessão (`.jsonl`) acessíveis e agrega `cost`/tokens por **dia** e por
-    **projeto**; janela ajustável por `--since YYYY-MM-DD` e `--limit n`.
-  - `--json` retorna `{ totalUsd, totalTokens, byDay: [...], byProject: [...] }`.
-  - `--save` persiste o agregado como uma nota `memory` (tag `usage`), virando histórico auditável.
-  - Sem transcripts acessíveis → mensagem clara, `data` zerado, exit 0 (não é erro).
+- **Acceptance:**
+  - Scans the accessible session transcripts (`.jsonl`) and aggregates `cost`/tokens by **day** and by
+    **project**; window adjustable via `--since YYYY-MM-DD` and `--limit n`.
+  - `--json` returns `{ totalUsd, totalTokens, byDay: [...], byProject: [...] }`.
+  - `--save` persists the aggregate as a `memory` note (tag `usage`), becoming auditable history.
+  - No accessible transcripts → clear message, zeroed `data`, exit 0 (not an error).
 
 ---
 
-## F13 — Live tail do vault
+## F13 — Live tail of the vault
 
-### US-038 — Acompanhar as notas do time ao vivo
-**Como** lead **quero** rodar `watch` **para** ver, em tempo real, cada nota nova que os teammates
-escrevem no vault **para** acompanhar o progresso sem ficar rodando `recent` repetidamente.
+### US-038 — Follow the team's notes live
+**As a** lead **I want** to run `watch` **so that** I see, in real time, each new note that the teammates
+write to the vault **so that** I follow the progress without repeatedly running `recent`.
 - **Tool:** `watch` · **Feature:** F13
-- **Aceite:**
-  - Observa a partição do projeto (e global) com `fs.watch` e, a cada nota **criada**, imprime uma
-    linha `HH:MM tipo/agent — título` (com `summary` quando presente).
-  - `--all` observa todos os projetos; encerra limpo em `SIGINT` (Ctrl-C) sem stacktrace.
-  - Não relê notas pré-existentes (só eventos a partir do start); dedup de eventos duplicados do FS.
-  - Como é um processo longo, fica **fora** do contrato `lines/data` padrão (stream contínuo) — documentado.
+- **Acceptance:**
+  - Observes the project partition (and global) with `fs.watch` and, for each note **created**, prints a
+    line `HH:MM type/agent — title` (with `summary` when present).
+  - `--all` observes all projects; ends cleanly on `SIGINT` (Ctrl-C) without a stacktrace.
+  - Does not re-read pre-existing notes (only events from the start); dedup of duplicate FS events.
+  - Since it is a long-running process, it stays **outside** the standard `lines/data` contract (continuous stream) — documented.
 
 ---
 
-## F14 — Digest de sessão
+## F14 — Session digest
 
-### US-039 — Fechar a sessão com um sumário automático
-**Como** lead **quero** rodar `digest --since <data>` **para** obter um resumo em markdown do que o
-time produziu numa janela **para** registrar um fecho de sessão sem reler nota por nota.
+### US-039 — Close the session with an automatic summary
+**As a** lead **I want** to run `digest --since <date>` **so that** I get a markdown summary of what the
+team produced in a window **so that** I record a session closure without re-reading note by note.
 - **Tool:** `digest` · **Feature:** F14
-- **Aceite:**
-  - Coleta as notas da janela (`--since`, default = hoje) e gera um markdown agrupado por **agente**
-    e por **tipo**, com bullets de `título — summary` e contagens.
-  - `--save` persiste o digest como nota `memory` (tag `digest`), com wikilinks para as notas-fonte.
-  - `--json` retorna `{ since, total, byAgent, byType, notes: [...] }`.
-  - Janela vazia → digest válido informando "nenhuma nota na janela", exit 0.
+- **Acceptance:**
+  - Collects the notes of the window (`--since`, default = today) and generates a markdown grouped by **agent**
+    and by **type**, with bullets of `title — summary` and counts.
+  - `--save` persists the digest as a `memory` note (tag `digest`), with wikilinks to the source notes.
+  - `--json` returns `{ since, total, byAgent, byType, notes: [...] }`.
+  - Empty window → valid digest reporting "no note in the window", exit 0.
 
 ---
 
 ## F15 — Health check
 
-### US-040 — Diagnosticar a instalação do memory-team
-**Como** mantenedor **quero** rodar `doctor` **para** checar se hooks, settings, statusline e vault
-estão sãos **para** descobrir uma instalação meio-quebrada antes que ela me atrapalhe.
+### US-040 — Diagnose the memory-team installation
+**As a** maintainer **I want** to run `doctor` **so that** I check whether hooks, settings, statusline and vault
+are healthy **so that** I discover a half-broken installation before it gets in my way.
 - **Tool:** `doctor` · **Feature:** F15
-- **Aceite:**
-  - Verifica: vault acessível e gravável; `settings.json` parseável; hooks `TaskCompleted`/`TeammateIdle`
-    registrados; `statusLine` apontando para um script existente; integridade do vault (reusa `validate`).
-  - Cada check vira uma linha `✓/✗/⚠ nome — detalhe`; **exit 1** se houver ao menos um `✗`.
-  - `--json` retorna `{ ok, checks: [{ name, status, detail }] }`.
-  - Não corrige nada por padrão (read-only diagnostic); apenas reporta e, quando útil, sugere o fix.
+- **Acceptance:**
+  - Checks: vault accessible and writable; `settings.json` parseable; `TaskCompleted`/`TeammateIdle` hooks
+    registered; `statusLine` pointing to an existing script; vault integrity (reuses `validate`).
+  - Each check becomes a line `✓/✗/⚠ name — detail`; **exit 1** if there is at least one `✗`.
+  - `--json` returns `{ ok, checks: [{ name, status, detail }] }`.
+  - Does not fix anything by default (read-only diagnostic); only reports and, when useful, suggests the fix.
 
 ---
 
-## F16 — Configuração central
+## F16 — Central configuration
 
-### US-041 — Ler e ajustar preferências do memory-team
-**Como** usuário **quero** rodar `config get/set <chave> [valor]` **para** ajustar comportamentos
-(limiares do statusline, formato de data, limite de contexto custom) **para** não ter defaults
-cravados no código.
+### US-041 — Read and adjust memory-team preferences
+**As a** user **I want** to run `config get/set <key> [value]` **so that** I adjust behaviors
+(statusline thresholds, date format, custom context limit) **so that** I do not have defaults
+hardcoded in the code.
 - **Tool:** `config` · **Feature:** F16
-- **Aceite:**
-  - `config list` mostra todas as chaves + valor efetivo (default vs. override); `config get <k>`
-    imprime uma; `config set <k> <v>` persiste num `config.json` do vault.
-  - Chaves conhecidas têm **default embutido**; chave desconhecida em `set` é aceita mas avisada;
-    em `get` retorna vazio sem erro.
-  - Valores tipados o suficiente (números viram número); `--json` retorna o objeto de config efetivo.
-  - É a fonte dos limiares do statusline (F11/US-034) e do limite de contexto custom.
+- **Acceptance:**
+  - `config list` shows all keys + effective value (default vs. override); `config get <k>`
+    prints one; `config set <k> <v>` persists into a vault `config.json`.
+  - Known keys have an **embedded default**; an unknown key in `set` is accepted but warned about;
+    in `get` it returns empty without error.
+  - Values typed enough (numbers become numbers); `--json` returns the effective config object.
+  - It is the source of the statusline thresholds (F11/US-034) and of the custom context limit.
 
 ---
 
-## F17 — Templates de nota
+## F17 — Note templates
 
-### US-042 — Criar uma nota a partir de um template
-**Como** teammate **quero** rodar `template <nome> "<título>"` **para** gerar uma nota já com a
-estrutura de seções que aquele tipo de entrega pede **para** padronizar e ganhar tempo.
+### US-042 — Create a note from a template
+**As a** teammate **I want** to run `template <name> "<title>"` **so that** I generate a note already with the
+section structure that that kind of delivery requires **so that** I standardize and save time.
 - **Tool:** `template` · **Feature:** F17
-- **Aceite:**
-  - `template list` lista os templates disponíveis (embutidos + os do vault em `_templates/`).
-  - `template <nome> "<título>"` cria uma nota preenchendo o corpo com o esqueleto do template e o
-    frontmatter canônico (reusa o naming/arquivamento do `save`).
-  - Template inexistente → erro claro listando os válidos, exit 1, nada escrito.
-  - Templates suportam placeholders mínimos (`{{title}}`, `{{date}}`, `{{project}}`, `{{agent}}`).
-  - **Placeholder desconhecido** (ex.: `{{foo}}`) permanece **literal** no corpo — não é substituído
-    nem removido (contrato previsível; N2).
-  - **Não sobrescreve state** (US-004/US-031): se o template declara `type: state` e o `save` é
-    idempotente (`data.created === false`), o template **preserva** a nota existente e reporta
-    `created:false` — nunca clobba um state em silêncio (B1 da revisão).
+- **Acceptance:**
+  - `template list` lists the available templates (embedded + the vault ones in `_templates/`).
+  - `template <name> "<title>"` creates a note filling the body with the template skeleton and the
+    canonical frontmatter (reuses the naming/filing of `save`).
+  - A nonexistent template → clear error listing the valid ones, exit 1, nothing written.
+  - Templates support minimal placeholders (`{{title}}`, `{{date}}`, `{{project}}`, `{{agent}}`).
+  - An **unknown placeholder** (e.g.: `{{foo}}`) stays **literal** in the body — it is neither substituted
+    nor removed (predictable contract; N2).
+  - **Does not overwrite state** (US-004/US-031): if the template declares `type: state` and `save` is
+    idempotent (`data.created === false`), the template **preserves** the existing note and reports
+    `created:false` — never silently clobbers a state (B1 from the review).
 
 ---
 
-## F18 — Pin / destaque de notas
+## F18 — Pin / highlight notes
 
-### US-043 — Fixar as notas que importam
-**Como** lead **quero** rodar `pin <ref>` **para** marcar notas-chave **para** que apareçam no topo
-de `search`/`list`/`recent` e não se percam no volume.
+### US-043 — Pin the notes that matter
+**As a** lead **I want** to run `pin <ref>` **so that** I mark key notes **so that** they appear at the top
+of `search`/`list`/`recent` and do not get lost in the volume.
 - **Tool:** `pin` · **Feature:** F18
-- **Aceite:**
-  - `pin <ref>` adiciona `pinned: true` ao frontmatter (reescreve via `formatNote`); `pin <ref> --off`
-    remove; `pin --list` lista as fixadas.
-  - Notas fixadas são ordenadas **antes** das demais em `search`/`list`/`recent` (desempate normal entre elas).
-  - `<ref>` ambíguo/inexistente → erro claro, exit 1, sem escrever.
-  - Preserva todo o frontmatter desconhecido no round-trip (invariante US-030).
+- **Acceptance:**
+  - `pin <ref>` adds `pinned: true` to the frontmatter (rewrites via `formatNote`); `pin <ref> --off`
+    removes it; `pin --list` lists the pinned ones.
+  - Pinned notes are ordered **before** the others in `search`/`list`/`recent` (normal tie-break among them).
+  - An ambiguous/nonexistent `<ref>` → clear error, exit 1, without writing.
+  - Preserves all unknown frontmatter in the round-trip (invariant US-030).
 
 ---
 
-## F19 — Snapshot / checkpoint do vault
+## F19 — Vault snapshot / checkpoint
 
-### US-044 — Tirar um checkpoint do vault antes de uma operação arriscada
-**Como** mantenedor **quero** rodar `snapshot` **para** congelar o estado atual do vault **para** poder
-voltar atrás se um `retag`/`prune`/`import` em massa der errado.
+### US-044 — Take a checkpoint of the vault before a risky operation
+**As a** maintainer **I want** to run `snapshot` **so that** I freeze the current state of the vault **so that** I can
+go back if a bulk `retag`/`prune`/`import` goes wrong.
 - **Tool:** `snapshot` · **Feature:** F19
-- **Aceite:**
-  - `snapshot` cria um checkpoint datado em `_snapshots/<timestamp>/` (cópia das notas, sem `_snapshots`
-    recursivo); `snapshot --list` lista os existentes com data e contagem.
-  - `snapshot --restore <id>` repõe o vault a partir de um checkpoint, **exigindo** a flag explícita
-    (operação destrutiva — invariante US-031) e fazendo antes um snapshot de segurança.
-  - `--restore` é **reset** (limpar-e-repor), não merge: notas criadas **após** o checkpoint
-    desaparecem no restore (esse é o objetivo — "voltar atrás"); `_snapshots/` nunca é apagado.
-  - `--restore <id>` com **id inexistente/ambíguo** → erro claro, exit 1, **nada tocado** (A5).
-  - O snapshot de **segurança** (feito antes do restore) não polui o `--list` por padrão (A2).
-  - `--json` retorna `{ id, path, count }` na criação e a lista na listagem.
-  - **Cópia direta de arquivo** (não serializa via `export`/F9): preserva os bytes da nota com
-    fidelidade total e zero perda de formatação — propósito distinto do `export` (serialização lógica
-    portável). Zero-dependency, sem ferramenta externa. *(A3 relaxado: reuso de `export` não é requisito.)*
+- **Acceptance:**
+  - `snapshot` creates a dated checkpoint in `_snapshots/<timestamp>/` (copy of the notes, without recursive
+    `_snapshots`); `snapshot --list` lists the existing ones with date and count.
+  - `snapshot --restore <id>` restores the vault from a checkpoint, **requiring** the explicit flag
+    (destructive operation — invariant US-031) and first taking a safety snapshot.
+  - `--restore` is a **reset** (clear-and-restore), not a merge: notes created **after** the checkpoint
+    disappear on restore (that is the goal — "go back"); `_snapshots/` is never deleted.
+  - `--restore <id>` with a **nonexistent/ambiguous id** → clear error, exit 1, **nothing touched** (A5).
+  - The **safety** snapshot (taken before the restore) does not pollute `--list` by default (A2).
+  - `--json` returns `{ id, path, count }` on creation and the list on listing.
+  - **Direct file copy** (does not serialize via `export`/F9): preserves the note's bytes with
+    full fidelity and zero formatting loss — a distinct purpose from `export` (portable logical
+    serialization). Zero-dependency, no external tool. *(A3 relaxed: reuse of `export` is not a requirement.)*
 
 ---
 
-## F20 — Sugestão automática de wikilinks
+## F20 — Automatic wikilink suggestion
 
-### US-045 — Receber sugestões de ligações entre notas
-**Como** librarian **quero** rodar `relate <ref>` **para** ver quais outras notas são candidatas a
-`[[wikilink]]` por similaridade de tags/summary **para** adensar o grafo sem caçar manualmente.
+### US-045 — Receive suggestions for links between notes
+**As a** librarian **I want** to run `relate <ref>` **so that** I see which other notes are candidates for a
+`[[wikilink]]` by tag/summary similarity **so that** I densify the graph without hunting manually.
 - **Tool:** `relate` · **Feature:** F20
-- **Aceite:**
-  - Dada `<ref>`, rankeia outras notas por similaridade (tags em comum > termos de summary > tipo),
-    ignorando as já ligadas; mostra top-N com o score e o motivo.
-  - `relate <ref> --apply` adiciona os top sugeridos ao `related` da nota (reescreve via `formatNote`),
-    **não** destrutivo sobre o que já existe; sem `--apply` é só sugestão (dry-run).
-  - `--json` retorna `[{ name, score, reason }]`; sem candidatos → lista vazia clara, exit 0.
+- **Acceptance:**
+  - Given `<ref>`, ranks other notes by similarity (tags in common > summary terms > type),
+    ignoring the already-linked ones; shows the top-N with the score and the reason.
+  - `relate <ref> --apply` adds the top suggestions to the note's `related` (rewrites via `formatNote`),
+    **non**-destructive over what already exists; without `--apply` it is only a suggestion (dry-run).
+  - `--json` returns `[{ name, score, reason }]`; no candidates → clear empty list, exit 0.
 
 ---
 
-## Integridade e qualidade (transversal — herdado e estendido)
+## Integrity and quality (cross-cutting — inherited and extended)
 
-### US-046 — Tempo real não pode custar caro nem quebrar a CLI
-**Como** usuário **quero** que as features "ao vivo" (statusline, watch) sejam **baratas e à prova de
-falha** **para** que rodar a cada turno não me deixe a CLI lenta nem derrube a render.
+### US-046 — Real time must not be expensive nor break the CLI
+**As a** user **I want** the "live" features (statusline, watch) to be **cheap and fail-proof** **so that** running them every turn does not make the CLI slow nor bring down the render.
 - **Tool:** `statusline.mjs`, `watch` · **Feature:** F11/F13
-- **Aceite:**
-  - O statusline executa em uma passada, lê **só** a cauda necessária do transcript, e em qualquer
-    erro degrada para um fallback curto saindo **0** (nunca lança para o Claude Code).
-  - Nenhuma das duas adiciona dependência externa; ambas respeitam os princípios de design da Fase 1.
+- **Acceptance:**
+  - The statusline executes in one pass, reads **only** the necessary tail of the transcript, and on any
+    error degrades to a short fallback exiting **0** (never throws to Claude Code).
+  - Neither of the two adds an external dependency; both respect the Phase 1 design principles.
 
-### US-047 — Toda tool nova da Fase 2 vem com testes
-**Como** mantenedor **quero** que cada nova tool tenha testes `node:test` com vault temporário
-**para** manter a suíte verde e sem mocks (invariante US-032 estendida à Fase 2).
-- **Tool:** transversal · **Feature:** F11–F20
-- **Aceite:**
-  - Cada tool de registry tem happy path in-process + ramos de borda; o `statusline.mjs` é testado
-    alimentando um payload sintético via stdin e assertando os segmentos da linha de saída.
-  - `npm test` continua passando inteiro; nenhuma regressão nas 25 tools da base.
+### US-047 — Every new Phase 2 tool comes with tests
+**As a** maintainer **I want** each new tool to have `node:test` tests with a temporary vault
+**so that** I keep the suite green and mock-free (invariant US-032 extended to Phase 2).
+- **Tool:** cross-cutting · **Feature:** F11–F20
+- **Acceptance:**
+  - Each registry tool has an in-process happy path + edge branches; `statusline.mjs` is tested by
+    feeding a synthetic payload via stdin and asserting the output line's segments.
+  - `npm test` keeps passing entirely; no regression in the base's 25 tools.

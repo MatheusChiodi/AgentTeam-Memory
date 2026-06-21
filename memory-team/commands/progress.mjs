@@ -58,11 +58,11 @@ export default {
     };
 
     const lines = [
-      '# progresso',
+      '# progress',
       '',
       `checkboxes  ${paintPct(bar(pct), pct)} ${pct}%  (${done}/${total})`,
-      `planos      ${plansComplete}/${plansTotal} completos`,
-      `bloqueios   ${blockers} aberto(s)`,
+      `plans       ${plansComplete}/${plansTotal} complete`,
+      `blockers    ${blockers} open`,
     ];
     return { ok: true, lines, data };
   },

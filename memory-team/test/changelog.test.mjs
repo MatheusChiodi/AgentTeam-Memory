@@ -11,13 +11,13 @@ let root;
 before(() => {
   root = makeVault();
   seedNote(root, PROJ, 'memory', 'dec-old.md',
-    { type: 'decision', project: PROJ, agent: 'x', summary: 'escolhe sqlite', tags: ['t'], created: '2026-01-01' }, 'b');
+    { type: 'decision', project: PROJ, agent: 'x', summary: 'pick sqlite', tags: ['t'], created: '2026-01-01' }, 'b');
   seedNote(root, PROJ, 'memory', 'learn-mid.md',
-    { type: 'learning', project: PROJ, agent: 'x', summary: 'cache acelera', tags: ['t'], created: '2026-02-01' }, 'b');
+    { type: 'learning', project: PROJ, agent: 'x', summary: 'cache speeds up', tags: ['t'], created: '2026-02-01' }, 'b');
   seedNote(root, PROJ, 'memory', 'dec-new.md',
-    { type: 'decision', project: PROJ, agent: 'x', summary: 'adota esm', tags: ['t'], created: '2026-03-01' }, 'b');
+    { type: 'decision', project: PROJ, agent: 'x', summary: 'adopt esm', tags: ['t'], created: '2026-03-01' }, 'b');
   seedNote(root, PROJ, 'memory', 'plain.md',
-    { type: 'memory', project: PROJ, agent: 'x', summary: 'ruído', tags: ['t'], created: '2026-03-15' }, 'b');
+    { type: 'memory', project: PROJ, agent: 'x', summary: 'noise', tags: ['t'], created: '2026-03-15' }, 'b');
 });
 after(() => cleanup(root));
 
@@ -29,8 +29,8 @@ test('changelog: collects decisions+learnings, newest first, badged by type', as
   // a plain memory note is never included
   assert.ok(!res.data.entries.some((e) => e.title === 'plain'));
   const text = res.lines.join('\n');
-  assert.match(text, /\[decisão\]/);
-  assert.match(text, /\[aprendizado\]/);
+  assert.match(text, /\[decision\]/);
+  assert.match(text, /\[learning\]/);
 });
 
 test('changelog: --since filters by created>=since', async () => {
@@ -50,7 +50,7 @@ test('changelog: empty window → empty changelog, exit 0', async () => {
   const res = await run('changelog', { project: 'changelog-empty', root });
   assert.equal(res.ok, true);
   assert.deepEqual(res.data.entries, []);
-  assert.match(res.lines.join('\n'), /nada na janela/);
+  assert.match(res.lines.join('\n'), /nothing in the window/);
 });
 
 test('changelog: --since beyond all notes → empty, exit 0', async () => {
@@ -68,5 +68,5 @@ test('changelog: --save persists a deterministic note with tag changelog (opt.to
   const raw = readFileSync(`${root}/${res.data.file}`, 'utf8');
   assert.match(raw, /tags: \[changelog\]/);
   assert.match(raw, /created: 2026-06-21/);
-  assert.match(raw, /\[decisão\]/);
+  assert.match(raw, /\[decision\]/);
 });
