@@ -1,8 +1,8 @@
 <div align="center">
 
-# AgentTeam-Memory
+<img src="docs/assets/hero-banner.svg" alt="AgentTeam-Memory — persistent, per-project memory for Claude Code agent teams · 54 commands · zero dependencies · 406 tests · one Obsidian vault" width="100%">
 
-**Persistent, per-project, auditable memory for Claude Code _agent teams_, backed by an Obsidian vault.**
+&nbsp;
 
 [![Node](https://img.shields.io/badge/node-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A52.1.32-d97757)](https://docs.anthropic.com/en/docs/claude-code)
@@ -10,15 +10,21 @@
 [![Tests](https://img.shields.io/badge/tests-node%3Atest%20406%2F406-success)](#8-testing)
 [![License](https://img.shields.io/badge/license-MIT%20%2B%20Attribution-blue)](LICENSE)
 
-*Created by **Matheus Chiodi (MChiodi)**.*
+**A zero-dependency Node.js (ESM) CLI that gives a Claude Code _agent team_ a shared brain — one that survives every session.**
+
+[**Quick start**](#3-setup-2-min) &nbsp;·&nbsp; [**Commands**](#7-command-reference-54) &nbsp;·&nbsp; [**Feature guide**](docs/FEATURES.md) &nbsp;·&nbsp; [**Architecture**](docs/ARCHITECTURE.md)
+
+<sub>created by **Matheus Chiodi (MChiodi)**</sub>
 
 </div>
 
-> A **zero-dependency Node.js (ESM) CLI** that gives a Claude Code agent team a shared brain.
-> Install once on any machine; it works in **every** project you open. 54 commands + a real-time usage
-> status line, one Obsidian vault.
+> [!NOTE]
+> **In one line:** a Claude Code _agent team_ forgets everything when a teammate's context window
+> closes. AgentTeam-Memory gives the team a shared, auditable **Obsidian vault** plus a tiny
+> discipline — *read memory before acting, write a note after each deliverable* — so decisions,
+> facts and progress **persist across sessions**.
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## Table of contents
 
@@ -59,6 +65,14 @@ and versionable in git.
 ---
 
 ## 2. How it fits together
+
+<div align="center">
+  <img src="docs/assets/flow.svg" width="88%" alt="The memory loop: the agent team WRITEs an atomic note to the vault after each deliverable and READs memory before acting — so knowledge survives every session.">
+</div>
+
+**The core loop in one sentence:** every teammate **reads** the vault before acting and **writes** an
+atomic note after each deliverable — the single discipline that turns four forgetful agents into a team
+with one durable, shared brain. The full picture:
 
 ```mermaid
 flowchart LR
@@ -482,7 +496,7 @@ Re-run `node install.mjs --vault <newdir>` to point at a different vault. To rem
 `~/.claude/memory-team`, the 4 files in `~/.claude/agents/`, the `memory-team` block in
 `~/.claude/CLAUDE.md`, and the hook/env entries in `~/.claude/settings.json` (restore the `.bak`).
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 12. License
 

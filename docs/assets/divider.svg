@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 18" role="img" aria-label="Decorative animated section divider with a red shimmer sweeping across a thin line and twinkling node ticks.">
+  <title>Section divider — a red shimmer sweeps a thin baseline</title>
+
+  <defs>
+    <linearGradient id="div-shimmer" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#ff5555" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="#ff5555" stop-opacity="0.95"/>
+      <stop offset="0.55" stop-color="#ff8a8a" stop-opacity="0.95"/>
+      <stop offset="1"    stop-color="#ff8a8a" stop-opacity="0"/>
+    </linearGradient>
+
+    <style>
+      .div-sweep {
+        animation: divSweep 6s ease-in-out infinite;
+      }
+      @keyframes divSweep {
+        0%   { transform: translateX(-260px); }
+        100% { transform: translateX(880px); }
+      }
+
+      .div-tick { transform-box: fill-box; transform-origin: center; }
+      .div-t1 { animation: divTwinkle 3s ease-in-out infinite; }
+      .div-t2 { animation: divTwinkle 3s ease-in-out 0.6s infinite; }
+      .div-t3 { animation: divTwinkle 3s ease-in-out 1.2s infinite; }
+      .div-t4 { animation: divTwinkle 3s ease-in-out 1.8s infinite; }
+      @keyframes divTwinkle {
+        0%, 100% { opacity: 0.25; transform: scale(0.85); }
+        50%      { opacity: 1;    transform: scale(1.15); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; }
+        .div-sweep { transform: translateX(310px); }
+      }
+    </style>
+  </defs>
+
+  <!-- baseline -->
+  <rect x="0" y="8.5" width="880" height="1" fill="#1e2a3a"/>
+
+  <!-- shimmer segment sweeping along the baseline -->
+  <g class="div-sweep">
+    <rect x="0" y="7.5" width="260" height="3" rx="1.5" fill="url(#div-shimmer)"/>
+  </g>
+
+  <!-- twinkling node ticks -->
+  <circle class="div-tick div-t1" cx="176" cy="9" r="2.5" fill="#ff5555"/>
+  <circle class="div-tick div-t2" cx="352" cy="9" r="2.5" fill="#ff8a8a"/>
+  <circle class="div-tick div-t3" cx="528" cy="9" r="2.5" fill="#ffb3b3"/>
+  <circle class="div-tick div-t4" cx="704" cy="9" r="2.5" fill="#ff5555"/>
+</svg>
