@@ -39,6 +39,31 @@ export const today = () => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 };
 
+// Deterministic UTC date math over YYYY-MM-DD strings (no Date.now → safe in tests).
+// `today()` is the only clock-reading entrypoint; everything else derives from a given date.
+export function addDays(dateStr, n) {
+  const [y, m, d] = String(dateStr).split('-').map(Number);
+  const dt = new Date(Date.UTC(y, (m || 1) - 1, d || 1));
+  dt.setUTCDate(dt.getUTCDate() + n);
+  const p = (x) => String(x).padStart(2, '0');
+  return `${dt.getUTCFullYear()}-${p(dt.getUTCMonth() + 1)}-${p(dt.getUTCDate())}`;
+}
+
+/** Inclusive list of YYYY-MM-DD from `fromStr` to `toStr` (empty if inverted). */
+export function dateRange(fromStr, toStr) {
+  const out = [];
+  if (!fromStr || !toStr || fromStr > toStr) return out;
+  let cur = fromStr;
+  while (cur <= toStr) { out.push(cur); cur = addDays(cur, 1); }
+  return out;
+}
+
+/** Day of week for a YYYY-MM-DD string: 0=Sunday .. 6=Saturday (UTC). */
+export function dayOfWeek(dateStr) {
+  const [y, m, d] = String(dateStr).split('-').map(Number);
+  return new Date(Date.UTC(y, (m || 1) - 1, d || 1)).getUTCDay();
+}
+
 export const getp = (o, keys) => {
   for (const k of keys) {
     const v = k.split('.').reduce((a, c) => (a == null ? a : a[c]), o);
