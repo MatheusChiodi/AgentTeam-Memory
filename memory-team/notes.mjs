@@ -11,11 +11,11 @@
 // so every function is unit-testable in isolation.
 
 import {
-  readFileSync, existsSync, statSync,
+  readFileSync, existsSync, statSync, writeFileSync,
 } from 'node:fs';
 import { join, basename, relative } from 'node:path';
 import {
-  partition, globalPart, walk, parseFM, listProjects, slug,
+  partition, globalPart, walk, parseFM, listProjects, slug, today, ensure, ensurePartition,
 } from './lib.mjs';
 
 // Canonical frontmatter key order (matches `save`). Unknown keys are appended, sorted.
@@ -192,4 +192,52 @@ export function isPinned(note) {
 /** Sort comparator fragment: pinned notes first (0 when both share pin state). */
 export function byPinned(a, b) {
   return Number(isPinned(b)) - Number(isPinned(a));
+}
+
+/**
+ * Create a note from generated content, reusing the canonical frontmatter (formatNote) and the
+ * slug-collision suffixing of `save`. Shared by the Fase 3 tools' `--save`/`plan` so every
+ * generated note is indistinguishable from a hand-written one (appears in search/graph/index).
+ * `body` is the markdown content (a `# <title>` heading is prepended automatically).
+ * Returns { file (vault-relative), created }. State notes are idempotent (created:false if present).
+ */
+export function saveNote(root, project, {
+  type = 'memory', title, summary, tags = [], related = [],
+  agent = 'unknown', body = '', task, global = false, created,
+} = {}) {
+  if (!title) throw new Error('saveNote: title is required');
+  ensurePartition(root, project);
+  const part = global ? globalPart(root) : partition(root, project);
+  const date = created || today();
+  const dir = type === 'state'
+    ? partition(root, project).agents
+    : type === 'communication' ? part.board : part.memory;
+  ensure(dir);
+
+  const baseFile = type === 'state'
+    ? join(dir, `${slug(title)}.md`)
+    : join(dir, `${date}-${slug(title)}.md`);
+
+  if (type === 'state' && existsSync(baseFile)) {
+    return { file: relOf(root, baseFile), created: false };
+  }
+  let final = baseFile;
+  if (type !== 'state') {
+    let n = 2;
+    while (existsSync(final)) { final = baseFile.replace(/\.md$/, `-${n}.md`); n++; }
+  }
+
+  const fm = {
+    type,
+    project: global ? 'global' : project,
+    agent,
+    summary: summary || title,
+    tags: Array.isArray(tags) ? tags : [tags].filter(Boolean),
+    related: (Array.isArray(related) ? related : [related]).filter(Boolean),
+    ...(task ? { task } : {}),
+    created: date,
+  };
+  const heading = `# ${title}\n\n${String(body || '').replace(/^\n+/, '')}`;
+  writeFileSync(final, formatNote(fm, heading), 'utf8');
+  return { file: relOf(root, final), created: true };
 }
