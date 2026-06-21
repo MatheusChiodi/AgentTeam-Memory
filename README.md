@@ -7,7 +7,7 @@
 [![Node](https://img.shields.io/badge/node-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A52.1.32-d97757)](https://docs.anthropic.com/en/docs/claude-code)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](#9-design-invariants)
-[![Tests](https://img.shields.io/badge/tests-node%3Atest%20100%2F100-success)](#8-testing)
+[![Tests](https://img.shields.io/badge/tests-node%3Atest%20232%2F232-success)](#8-testing)
 [![License](https://img.shields.io/badge/license-MIT%20%2B%20Attribution-blue)](LICENSE)
 
 *Created by **Matheus Chiodi (MChiodi)**.*
@@ -15,7 +15,8 @@
 </div>
 
 > A **zero-dependency Node.js (ESM) CLI** that gives a Claude Code agent team a shared brain.
-> Install once on any machine; it works in **every** project you open. 25 commands, one Obsidian vault.
+> Install once on any machine; it works in **every** project you open. 34 commands + a real-time usage
+> status line, one Obsidian vault.
 
 ---
 
@@ -23,11 +24,12 @@
 
 1. [Why it exists](#1-why-it-exists)
 2. [How it fits together](#2-how-it-fits-together)
+   - ⭐ [Real-time usage status line](#-real-time-usage-status-line)
 3. [Setup (~2 min)](#3-setup-2-min)
 4. [What the setup does](#4-what-the-setup-does)
 5. [Runtime architecture](#5-runtime-architecture)
 6. [Vault structure](#6-vault-structure)
-7. [Command reference (25)](#7-command-reference-25)
+7. [Command reference (34)](#7-command-reference-34)
 8. [Testing](#8-testing)
 9. [Design invariants](#9-design-invariants)
 10. [Repository layout](#10-repository-layout)
@@ -68,7 +70,7 @@ flowchart LR
     L["librarian"]
   end
   LEAD -->|SendMessage / task list| R & E & V & L
-  R & E & V & L -->|"node memory.mjs save / search"| CLI[["memory CLI<br/>(25 commands)"]]
+  R & E & V & L -->|"node memory.mjs save / search"| CLI[["memory CLI<br/>(34 commands)"]]
   CLI --> VAULT[("Obsidian vault<br/>partitioned per project")]
   VAULT -.->|"READ before acting"| R & E & V & L
   HOOKS["Hooks (opt-in, fail-open)<br/>TaskCompleted · TeammateIdle"] -.->|enforce note-before-close| CLI
@@ -97,6 +99,40 @@ sequenceDiagram
   Lead->>CLI: (librarian) index
   CLI->>Vault: regenerate _index.md (MOC)
 ```
+
+---
+
+## ⭐ Real-time usage status line
+
+*Phase 2.* See **how much of your plan you've already spent** — plus how full the context window is and
+the session cost — passively in the Claude Code footer, refreshed every turn. No more manual `/usage`.
+
+```mermaid
+flowchart LR
+  CC["Claude Code"] -->|"status payload via stdin<br/>(rate_limits · context_window · cost · model)"| SL["statusline.mjs<br/>(standalone, zero-dep)"]
+  VAULT[("vault")] -.->|"project · enabled · note count"| SL
+  CFG["&lt;vault&gt;/config.json<br/>(warn / danger thresholds)"] -.-> SL
+  SL -->|"one line, every turn"| BAR["status bar:<br/>plan 5h 23% 7d 41% │ ctx ▓▓▓░ 53% │ $0.42 │ Opus │ mem ● proj 38n"]
+```
+
+| Segment | Source | Shows |
+| --- | --- | --- |
+| `plan 5h % · 7d %` | `rate_limits.{five_hour,seven_day}.used_percentage` | how much of your Claude.ai Pro/Max plan is spent — the `/usage` numbers. Degrades to `plan n/a` on API key/Bedrock/Vertex. |
+| `ctx [bar] %` | `context_window` (fallback: transcript) | context-window fill, rescaled for 1M windows (works around Claude Code [#36725](https://github.com/anthropics/claude-code/issues/36725)) |
+| `$0.42` | `cost.total_cost_usd` | session cost so far |
+| `mem ● proj 38n` | the vault (`lib.mjs`) | detected project, enforcement flag, note count |
+
+It is a **standalone entrypoint** — not a registry command — on purpose: it runs on every screen refresh,
+needs **stdin**, and emits **one line**. So it stays tiny and **never throws** (any error degrades to a
+short fallback and exits 0, never breaking the footer).
+
+```bash
+node memory-team/statusline.mjs --demo        # preview the line without Claude Code
+node memory-team/statusline.mjs --install     # register it in ~/.claude/settings.json (non-destructive)
+node memory-team/statusline.mjs --uninstall   # remove it
+```
+
+Thresholds (`warn`, `danger`) come from `config set statusline.warn 70` (see the [`config`](#7-command-reference-34) tool).
 
 ---
 
@@ -198,6 +234,8 @@ When `--json` is passed **and** `data` is populated, the dispatcher emits **only
 flowchart TD
   ROOT[("&lt;VAULT&gt;<br/>MEMORY_VAULT or ~/.claude/memory-vault")]
   ROOT --> IDX["_index.md<br/>(master MOC)"]
+  ROOT --> CFG["config.json<br/>(Phase 2 — preferences, e.g. statusline thresholds)"]
+  ROOT --> TPL["_templates/<br/>(Phase 2 — note templates)"]
   ROOT --> PROJ["projects/&lt;project&gt;/"]
   ROOT --> GLB["global/<br/>(cross-project knowledge)"]
   PROJ --> PIDX["_index.md (project MOC — librarian only)"]
@@ -205,6 +243,7 @@ flowchart TD
   PROJ --> BRD["board/   → communication"]
   PROJ --> AGT["agents/  → teammate state (survives the session)"]
   PROJ --> ARC["_archive/  → archived notes (excluded from search)"]
+  PROJ --> SNP["_snapshots/  → Phase 2 — vault checkpoints (snapshot/restore)"]
 ```
 
 `<project>` defaults to `slug(basename(cwd))` (override with `MEMORY_PROJECT`). Note routing by type:
@@ -221,7 +260,7 @@ fields they don't understand.
 
 ---
 
-## 7. Command reference (25)
+## 7. Command reference (34)
 
 CLI entry point: `node "~/.claude/memory-team/memory.mjs" <command>`. Run `… memory.mjs help` for the
 live list. `--json` works on every read command; `<ref>` is a **loose reference** resolved by
@@ -292,6 +331,21 @@ live list. `--json` works on every read command; `<ref>` is a **loose reference*
 | `export [--format json\|md] [--out file] [--all]` | export notes as JSON (default) or concatenated Markdown |
 | `import <file> [--project p]` | import notes from a JSON bundle (from `export`) |
 
+### Phase 2 — real-time, observability & productivity
+
+| Command | Purpose |
+| --- | --- |
+| `statusline.mjs` *(standalone)* | render plan/context/cost in the Claude Code status bar, every turn — see [the section above](#-real-time-usage-status-line) |
+| `usage [--dir path] [--since YYYY-MM-DD] [--limit n] [--save] [--json]` | historical cost/token ledger over session transcripts, by day & project |
+| `watch [--all]` | live-tail: print each new note as teammates write it (Ctrl-C to stop) |
+| `digest [--since YYYY-MM-DD] [--all] [--save] [--json]` | Markdown summary of a window, grouped by agent & type (`--save` writes the real digest body) |
+| `doctor [--settings path] [--json]` | read-only health check (vault, settings, hooks, statusline, integrity); **exit 1** on any failure |
+| `config list \| get <key> \| set <key> <value> [--json]` | read/adjust preferences in `<vault>/config.json` (e.g. statusline thresholds) |
+| `template list \| <name> "<title>" [--agent n --tags "a,b" --global]` | scaffold a note from a built-in or `_templates/` template (won't clobber an existing `state`) |
+| `pin <ref> [--off] \| pin --list [--all] [--json]` | pin a note so it floats to the top of `search`/`list`/`recent` |
+| `snapshot [--id id] \| --list [--all] \| --restore <id>` | checkpoint the vault to `_snapshots/`; `--restore` is a **true reset** (safety snapshot first) |
+| `relate <ref> [--top N] [--apply] [--all] [--json]` | suggest (or `--apply`) `[[wikilinks]]` for a note by tag/summary similarity |
+
 > **Safety guarantees.** Mutating tools (`tag`, `retag`, `prune`, `archive`, `move`, `rename`, `import`)
 > rewrite notes via `formatNote` to preserve unknown frontmatter. An ambiguous `<ref>` is reported,
 > never guessed. `move`/`rename` have an **anti-clobber guard**: if the destination name already belongs
@@ -345,18 +399,21 @@ memory-team/
   lib.mjs                   # low-level helpers (vault/project resolution, frontmatter, walk)
   notes.mjs                 # data layer (collect/resolve/format notes, wikilinks, tag histogram)
   memory.mjs                # thin dispatcher: argv → command, render lines/data/exit
-  commands/                 # one file per command (registry auto-discovers; 25 commands)
+  commands/                 # one file per command (registry auto-discovers; 34 commands)
+  statusline.mjs            # Phase 2 — standalone Claude Code status line (real-time plan/ctx/cost)
   CLAUDE.md                 # Memory Protocol (injected into ~/.claude/CLAUDE.md)
   agents/                   # researcher · executor · reviewer · librarian
   hooks/                    # task-completed.mjs · teammate-idle.mjs (opt-in, fail-open)
   test/                     # node:test suite (real temp vault, no mocks)
-docs/                       # ARCHITECTURE.md · USER-STORIES.md · system-guide.excalidraw
+docs/                       # ARCHITECTURE.md · USER-STORIES.md (+ *-PHASE-2.md) · system-guide.excalidraw
 tools/build-guide.mjs       # regenerates docs/system-guide.excalidraw
 START.md                    # install + day-to-day operation + lead prompts
 ```
 
-For the full design rationale, the 10 features and the 20-tool expansion, read
-**[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** and **[docs/USER-STORIES.md](docs/USER-STORIES.md)**.
+For the full design rationale, read **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** /
+**[docs/USER-STORIES.md](docs/USER-STORIES.md)** (Phase 0/1 — the 25-command base) and the Phase 2
+expansion in **[docs/ARCHITECTURE-PHASE-2.md](docs/ARCHITECTURE-PHASE-2.md)** /
+**[docs/USER-STORIES-PHASE-2.md](docs/USER-STORIES-PHASE-2.md)** (the real-time status line + 9 new tools).
 
 ---
 

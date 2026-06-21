@@ -1,5 +1,5 @@
-// recent — the N most recently created notes (mtime as tie-breaker).
-import { collectNotes } from '../notes.mjs';
+// recent — the N most recently created notes (mtime as tie-breaker; pinned float to top).
+import { collectNotes, byPinned } from '../notes.mjs';
 import { renderNotes } from './list.mjs';
 
 export default {
@@ -12,7 +12,8 @@ export default {
     const limit = Number.isFinite(n) && n > 0 ? n : 10;
 
     const notes = collectNotes(ROOT, ctx.all ? { all: true } : { project: PROJECT });
-    notes.sort((a, b) => (b.created || '').localeCompare(a.created || '') || b.mtime - a.mtime);
+    notes.sort((a, b) => byPinned(a, b)
+      || (b.created || '').localeCompare(a.created || '') || b.mtime - a.mtime);
     const top = notes.slice(0, limit);
 
     const { lines, data } = renderNotes(ROOT, top);

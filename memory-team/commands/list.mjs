@@ -1,5 +1,5 @@
-// list — enumerate notes with optional filters, newest first.
-import { collectNotes, relOf } from '../notes.mjs';
+// list — enumerate notes with optional filters, newest first (pinned float to top).
+import { collectNotes, relOf, byPinned } from '../notes.mjs';
 
 /** Project/agent/type/tag/since filters; returns notes sorted by `created` desc. */
 function filterNotes(notes, { type, tag, agent, project, since }) {
@@ -48,7 +48,8 @@ export default {
     let notes = filterNotes(collected, {
       type: opt.type, tag: opt.tag, agent: opt.agent, project: opt.project, since: opt.since,
     });
-    notes.sort((a, b) => (b.created || '').localeCompare(a.created || '') || b.mtime - a.mtime);
+    notes.sort((a, b) => byPinned(a, b)
+      || (b.created || '').localeCompare(a.created || '') || b.mtime - a.mtime);
 
     const limit = Number(opt.limit);
     if (Number.isFinite(limit) && limit > 0) notes = notes.slice(0, limit);

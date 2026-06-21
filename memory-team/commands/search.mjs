@@ -1,5 +1,5 @@
 // search — rank notes for a term/tag across the current project + global (or --all).
-import { collectNotes, relOf } from '../notes.mjs';
+import { collectNotes, relOf, byPinned } from '../notes.mjs';
 
 function scoreNote(n, t) {
   let score = 0;
@@ -28,7 +28,7 @@ export default {
       const score = scoreNote(n, t);
       if (score > 0) res.push({ ...n, score });
     }
-    res.sort((a, b) => b.score - a.score);
+    res.sort((a, b) => byPinned(a, b) || b.score - a.score);
 
     const where = ctx.all ? 'all projects + global' : `${PROJECT} + global`;
     const data = res.map((r) => ({

@@ -180,3 +180,16 @@ export function tagHistogram(notes) {
 export function noteExists(file) {
   return existsSync(file);
 }
+
+// True when a note is pinned (F18). parseFM yields the string 'true' for `pinned: true`,
+// so we accept both the boolean and its serialized form. Used by list/search/recent to
+// float pinned notes to the top without otherwise altering their order.
+export function isPinned(note) {
+  const p = note?.fm?.pinned;
+  return p === true || p === 'true';
+}
+
+/** Sort comparator fragment: pinned notes first (0 when both share pin state). */
+export function byPinned(a, b) {
+  return Number(isPinned(b)) - Number(isPinned(a));
+}
