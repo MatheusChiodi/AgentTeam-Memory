@@ -119,8 +119,19 @@ for (const [event, file, matcher] of HOOKS) {
     settings.hooks[event].push(group);
   }
 }
+// 3b) wire the F11 statusLine (the real-time usage line) to the COPIED script in DEST.
+// We point at join(DEST,'statusline.mjs') — NOT statusline.mjs's own `--install`, which
+// records import.meta.url of wherever it ran from; that source path wouldn't survive a
+// `/setup` on another machine. Non-destructive: only (re)write when absent or when the
+// existing block is already ours, so a user's custom statusLine is never clobbered.
+const slCommand = `node "${fwd(join(DEST, 'statusline.mjs'))}"`;
+const ownsStatusLine = settings.statusLine
+  && String(settings.statusLine.command || '').includes('statusline.mjs');
+if (!settings.statusLine || ownsStatusLine) {
+  settings.statusLine = { type: 'command', command: slCommand, padding: 0 };
+}
 writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, 'utf8');
-log(`✓ settings.json merged (agent teams ON, MEMORY_VAULT, in-process, 3 hooks)`);
+log(`✓ settings.json merged (agent teams ON, MEMORY_VAULT, in-process, 3 hooks, statusLine)`);
 
 // 4) inject protocol into ~/.claude/CLAUDE.md (between markers, idempotent)
 const protocol = readFileSync(join(SRC, 'CLAUDE.md'), 'utf8').replaceAll('{{MEM}}', MEM);

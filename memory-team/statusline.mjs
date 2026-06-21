@@ -198,7 +198,10 @@ function install() {
     try { cfg = JSON.parse(readFileSync(p, 'utf8')); }
     catch { process.stderr.write(`settings.json inválido em ${p} — abortado, nada sobrescrito.\n`); process.exitCode = 1; return; }
   }
-  cfg.statusLine = { type: 'command', command: `node "${SELF}"`, padding: 0 };
+  // Forward-slash the path so the command string is portable across OSes (the same
+  // convention install.mjs uses for hooks). Backslashes in JSON read as escapes and the
+  // Claude Code launcher accepts `/` on Windows too.
+  cfg.statusLine = { type: 'command', command: `node "${SELF.replace(/\\/g, '/')}"`, padding: 0 };
   writeFileSync(p, `${JSON.stringify(cfg, null, 2)}\n`);
   process.stdout.write(`statusLine do memory-team instalada em ${p}\n`);
 }
