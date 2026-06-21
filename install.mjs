@@ -52,14 +52,14 @@ mkdirSync(DEST, { recursive: true });
 mkdirSync(join(DEST, 'hooks'), { recursive: true });
 mkdirSync(AGENTS, { recursive: true });
 
-// 1) copy runtime (lib + data layer + cli + commands + hooks)
-copyFileSync(join(SRC, 'lib.mjs'), join(DEST, 'lib.mjs'));
-copyFileSync(join(SRC, 'notes.mjs'), join(DEST, 'notes.mjs'));
-copyFileSync(join(SRC, 'memory.mjs'), join(DEST, 'memory.mjs'));
+// 1) copy runtime — every top-level .mjs (lib, data layer, cli, render/statusline/analyze helpers)
+//    plus commands/ and hooks/. Dynamic scan so new root modules ship without editing this list.
+const rootModules = readdirSync(SRC).filter((f) => f.endsWith('.mjs'));
+for (const m of rootModules) copyFileSync(join(SRC, m), join(DEST, m));
 mkdirSync(join(DEST, 'commands'), { recursive: true });
 for (const c of readdirSync(join(SRC, 'commands'))) copyFileSync(join(SRC, 'commands', c), join(DEST, 'commands', c));
 for (const h of readdirSync(join(SRC, 'hooks'))) copyFileSync(join(SRC, 'hooks', h), join(DEST, 'hooks', h));
-log(`✓ runtime -> ${fwd(DEST)} (lib + notes + cli + commands + hooks)`);
+log(`✓ runtime -> ${fwd(DEST)} (${rootModules.length} modules + commands + hooks)`);
 
 // 1b) optional: GLOBAL enforcement marker — hooks enforce in every project, no per-project marker.
 const enforceMarker = join(DEST, '.enforce-global');
