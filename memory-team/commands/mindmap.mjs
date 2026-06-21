@@ -10,7 +10,10 @@ import { fail } from './_ctx.mjs';
 
 /** Wrap a root + branch names into a fenced ```mermaid `mindmap` block. */
 function renderMindmap(root, branches) {
-  const lines = ['```mermaid', 'mindmap', `  root((${mermaidEscape(root)}))`];
+  // A root that escapes to empty (e.g. a tag like "|||") would render `root(())`; fall back
+  // to a safe placeholder so the mindmap block stays valid.
+  const safeRoot = mermaidEscape(root) || 'root';
+  const lines = ['```mermaid', 'mindmap', `  root((${safeRoot}))`];
   for (const b of branches) lines.push(`    ${mermaidEscape(b)}`);
   lines.push('```');
   return lines;

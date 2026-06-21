@@ -66,3 +66,15 @@ test('focus: no candidates yields an empty list, exit 0', async () => {
   assert.equal(res.ok, true);
   assert.deepEqual(res.data, []);
 });
+
+test('focus: --budget 0 returns nothing (zero is honored, not the default) — B1', async () => {
+  const res = await run('focus', { pos: ['graph'], opt: { budget: '0' }, root, project: PROJ });
+  assert.equal(res.ok, true);
+  assert.deepEqual(res.data, []);
+});
+
+test('focus: --top 0 returns nothing (zero is a real cap, not "no cap")', async () => {
+  const res = await run('focus', { pos: ['graph'], opt: { top: '0' }, root, project: PROJ });
+  assert.equal(res.ok, true);
+  assert.deepEqual(res.data, []);
+});

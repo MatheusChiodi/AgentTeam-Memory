@@ -22,9 +22,12 @@ export default {
     const query = ctx.pos.join(' ').trim();
     if (!query) return fail('usage: focus <query> [--top N] [--budget N] [--json]');
 
-    const budget = Math.max(0, parseInt(opt.budget, 10) || DEFAULT_BUDGET);
+    // Distinguish absent/invalid (→ default) from a legitimate 0 (→ empty) for both caps,
+    // so `--budget 0` and `--top 0` mean "nothing", not "the default / no cap" (B1 fix).
+    const bn = parseInt(opt.budget, 10);
+    const budget = Math.max(0, Number.isFinite(bn) ? bn : DEFAULT_BUDGET);
     const top = parseInt(opt.top, 10);
-    const cap = Number.isFinite(top) && top > 0 ? top : Infinity;
+    const cap = Number.isFinite(top) && top >= 0 ? top : Infinity;
 
     const scope = ctx.all ? { all: true } : { project: PROJECT };
     // Score, drop zeros (irrelevant), rank by score desc with a stable name tie-break.

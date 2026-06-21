@@ -73,6 +73,15 @@ test('mindmap: --tag with no notes → mindmap with just the root, exit 0', asyn
   assert.match(res.lines.join('\n'), /mindmap/);
 });
 
+test('mindmap: a root that escapes to empty falls back to a valid placeholder', async () => {
+  // '#|||' → mermaidEscape strips everything → would render `root(())`; placeholder keeps it valid.
+  const res = await run('mindmap', { project: PROJ, opt: { tag: '|||' }, root });
+  assert.equal(res.ok, true);
+  const text = res.lines.join('\n');
+  assert.match(text, /root\(\(root\)\)/);
+  assert.ok(!text.includes('(())'));
+});
+
 test('mindmap: --json returns {root, branches}', async () => {
   const res = await run('mindmap', { pos: ['hub'], project: PROJ, opt: { json: true }, root });
   assert.ok('root' in res.data && Array.isArray(res.data.branches));

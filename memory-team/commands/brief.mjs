@@ -28,7 +28,10 @@ export default {
     const { ROOT, PROJECT, opt } = ctx;
     const query = ctx.pos.join(' ').trim();
     const full = opt.full === true;
-    const budget = Math.max(0, parseInt(opt.budget, 10) || DEFAULT_BUDGET);
+    // `0 || DEFAULT` would swallow an explicit `--budget 0`; distinguish "absent/invalid"
+    // (→ default) from a legitimate zero (→ empty pack) via Number.isFinite (B1 fix).
+    const bn = parseInt(opt.budget, 10);
+    const budget = Math.max(0, Number.isFinite(bn) ? bn : DEFAULT_BUDGET);
 
     const scope = ctx.all ? { all: true } : { project: PROJECT };
     const notes = collectNotes(ROOT, scope);

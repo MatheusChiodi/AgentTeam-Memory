@@ -7,8 +7,8 @@ import { collectNotes } from '../notes.mjs';
 import { extractCheckboxes } from '../analyze.mjs';
 import { bar, paintPct } from '../render.mjs';
 
-// Minimal local copy of the blockers predicate (tags only — enough for an "open blockers"
-// count; the full blockers tool also scans bodies). Kept local so progress has no cross-dep.
+// Minimal local copy of the blockers predicate (risk tags OR body markers — mirrors the
+// `blockers` tool's selection). Kept local so progress has no cross-command dependency.
 const RISK_TAGS = new Set(['blocker', 'risk', 'blocked']);
 const BODY_MARKERS = ['blocked', 'blocker', 'risco', '⚠'];
 function isBlocker(note) {

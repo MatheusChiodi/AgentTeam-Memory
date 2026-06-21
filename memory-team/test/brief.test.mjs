@@ -76,3 +76,11 @@ test('brief: empty vault yields an empty pack, exit 0', async () => {
   assert.deepEqual(res.data.notes, []);
   assert.equal(res.data.usedTokens, 0);
 });
+
+test('brief: --budget 0 yields an empty pack and reports budget 0 (not the default) — B1', async () => {
+  const res = await run('brief', { opt: { budget: '0' }, root, project: PROJ });
+  assert.equal(res.ok, true);
+  assert.equal(res.data.budget, 0); // honored literally, not swallowed into DEFAULT
+  assert.equal(res.data.usedTokens, 0);
+  assert.deepEqual(res.data.notes, []);
+});
