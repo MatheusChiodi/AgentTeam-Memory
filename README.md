@@ -28,21 +28,35 @@
 
 ## Table of contents
 
-1. [Why it exists](#1-why-it-exists)
-2. [How it fits together](#2-how-it-fits-together)
-   - ⭐ [Real-time usage status line](#-real-time-usage-status-line)
-3. [Setup (~2 min)](#3-setup-2-min)
-4. [What the setup does](#4-what-the-setup-does)
-5. [Runtime architecture](#5-runtime-architecture)
-6. [Vault structure](#6-vault-structure)
-7. [Command reference (54)](#7-command-reference-54)
-8. [Testing](#8-testing)
-9. [Design invariants](#9-design-invariants)
-10. [Repository layout](#10-repository-layout)
-11. [Uninstall / change vault](#11-uninstall--change-vault)
-12. [License](#12-license)
+- [Table of contents](#table-of-contents)
+- [1. Why it exists](#1-why-it-exists)
+- [2. How it fits together](#2-how-it-fits-together)
+- [⭐ Real-time usage status line](#-real-time-usage-status-line)
+- [3. Setup (~2 min)](#3-setup-2-min)
+- [4. What the setup does](#4-what-the-setup-does)
+- [5. Runtime architecture](#5-runtime-architecture)
+- [6. Vault structure](#6-vault-structure)
+- [7. Command reference (54)](#7-command-reference-54)
+  - [Core](#core)
+  - [Navigation \& reading](#navigation--reading)
+  - [Tags](#tags)
+  - [Knowledge graph (wikilinks)](#knowledge-graph-wikilinks)
+  - [Analytics](#analytics)
+  - [Validation \& cleanup](#validation--cleanup)
+  - [Lifecycle](#lifecycle)
+  - [Backup \& portability](#backup--portability)
+  - [Real-time, observability \& productivity](#real-time-observability--productivity)
+  - [Visualization — see the system at a glance](#visualization--see-the-system-at-a-glance)
+  - [Context packs \& token economy — more agent output, same tokens](#context-packs--token-economy--more-agent-output-same-tokens)
+  - [Daily flow — terminal vibe-coding commands](#daily-flow--terminal-vibe-coding-commands)
+  - [Knowledge \& metrics](#knowledge--metrics)
+- [8. Testing](#8-testing)
+- [9. Design invariants](#9-design-invariants)
+- [10. Repository layout](#10-repository-layout)
+- [11. Uninstall / change vault](#11-uninstall--change-vault)
+- [12. License](#12-license)
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 1. Why it exists
 
@@ -62,7 +76,7 @@ note after each deliverable** — and two opt-in hooks (`TaskCompleted`, `Teamma
 per project. Notes are Markdown with YAML frontmatter, linked by `[[wikilinks]]`, browsable in Obsidian
 and versionable in git.
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 2. How it fits together
 
@@ -114,7 +128,7 @@ sequenceDiagram
   CLI->>Vault: regenerate _index.md (MOC)
 ```
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## ⭐ Real-time usage status line
 
@@ -148,7 +162,7 @@ node memory-team/statusline.mjs --uninstall   # remove it
 
 Thresholds (`warn`, `danger`) come from `config set statusline.warn 70` (see the [`config`](#7-command-reference-54) tool).
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 3. Setup (~2 min)
 
@@ -172,7 +186,7 @@ claude
 
 That's it. Open a terminal in **any** project, run `claude`, and agent teams + memory are live.
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 4. What the setup does
 
@@ -187,7 +201,7 @@ That's it. Open a terminal in **any** project, run `claude`, and agent teams + m
 
 Your existing `~/.claude/settings.json` is **merged, not overwritten** (a timestamped `.bak` is kept).
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 5. Runtime architecture
 
@@ -240,7 +254,7 @@ export default {
 When `--json` is passed **and** `data` is populated, the dispatcher emits **only** the JSON of `data`
 (not `lines`) — so pipelines, CI and other agents consume structured output.
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 6. Vault structure
 
@@ -272,7 +286,7 @@ Frontmatter is rewritten in a **canonical order** (`FM_ORDER`) on every mutation
 commands (`retag`, `rename`, `move`, `archive`) produce stable, diffable notes and never drop unknown
 fields they don't understand.
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 7. Command reference (54)
 
@@ -415,7 +429,7 @@ The heavy lifting (ranking, summarizing, counting, budgeting) is **local and heu
 
 See **[START.md](START.md)** for the full operating guide and ready-to-paste lead prompts.
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 8. Testing
 
@@ -437,7 +451,7 @@ Each tool ships at least: a happy-path in-process test, an e2e `runCli` test whe
 matters (exit code, `--json`, render), edge branches (missing/ambiguous `<ref>`, empty vault), and —
 for mutating tools — an assertion that **unknown frontmatter survives the round-trip**.
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 9. Design invariants
 
@@ -449,7 +463,7 @@ for mutating tools — an assertion that **unknown frontmatter survives the roun
 6. **Stable round-trip.** Mutations rewrite via `formatNote`, preserving unknown fields.
 7. **Fail-open hooks, fail-loud CLI.** Hooks never block the team on a bug; the CLI signals errors clearly.
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 10. Repository layout
 
@@ -488,7 +502,7 @@ For the full design rationale, read the architecture and user-story specs:
 Topic-specific, ready-to-paste prompt packs live under `docs/` (architecture, review, unit-tests,
 bugs, improvements, project-analysis, project-changes, project-validation, vibe-coding).
 
----
+<div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
 ## 11. Uninstall / change vault
 
