@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // tag — add/remove tags on a single resolved note (rewrites it on disk).
 import { writeFileSync } from 'node:fs';
 import { resolveNotes, formatNote, relOf } from '../notes.mjs';

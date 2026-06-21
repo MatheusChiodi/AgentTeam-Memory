@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // links — outgoing [[wikilinks]] of a note, flagged resolved/dangling.
 import { resolveNotes, collectNotes, wikilinksOf, relOf } from '../notes.mjs';
 import { fail } from './_ctx.mjs';

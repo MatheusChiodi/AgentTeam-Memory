@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // analyze.mjs — pure text-analysis helpers shared by the Fase 3 token/knowledge tools.
 // No LLM, no console, no I/O: deterministic heuristics that run locally. This is the
 // technical meaning of "more agent output, same tokens" — the heavy lifting (ranking,

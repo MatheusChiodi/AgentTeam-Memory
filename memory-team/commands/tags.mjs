@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // tags — frequency histogram of tags across the project (or every project with --all).
 import { collectNotes, tagHistogram } from '../notes.mjs';
 

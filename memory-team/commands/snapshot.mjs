@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // snapshot — checkpoint the whole vault into <ROOT>/_snapshots/<id>/ and restore from it.
 // A snapshot is a plain copy of every note (.md), preserving its path relative to ROOT.
 // Restoring is a TRUE reset (US-044): it wipes the live vault and re-lays the checkpoint,

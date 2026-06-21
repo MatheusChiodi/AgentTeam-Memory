@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // recent — the N most recently created notes (mtime as tie-breaker; pinned float to top).
 import { collectNotes, byPinned } from '../notes.mjs';
 import { renderNotes } from './list.mjs';

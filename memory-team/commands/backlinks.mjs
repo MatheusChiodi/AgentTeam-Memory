@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // backlinks — notes that link TO the target via a [[wikilink]].
 import { resolveNotes, collectNotes, wikilinksOf, relOf } from '../notes.mjs';
 import { fail } from './_ctx.mjs';

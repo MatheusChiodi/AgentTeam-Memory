@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // save — write an atomic note, auto-filed under the current project (or --global).
 import { writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';

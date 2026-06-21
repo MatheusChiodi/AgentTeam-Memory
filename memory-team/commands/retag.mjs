@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // retag — rename a tag (old → new) across every note in the project (or --all).
 import { writeFileSync } from 'node:fs';
 import { collectNotes, formatNote, relOf } from '../notes.mjs';

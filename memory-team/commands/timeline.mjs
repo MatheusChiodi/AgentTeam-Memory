@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // timeline — notes grouped by creation day, newest first, with optional --since/--limit.
 import { collectNotes } from '../notes.mjs';
 

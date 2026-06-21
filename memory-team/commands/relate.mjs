@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // relate — suggest [[wikilinks]] for a note by similarity, optionally apply them.
 // Ranking: shared tags (heavy) > shared summary terms > same type. Excludes the
 // source itself and notes it already links to. Dry-run by default; --apply writes

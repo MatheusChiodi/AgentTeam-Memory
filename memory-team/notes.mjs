@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // notes.mjs — data-access layer over the vault, used by the CLI commands.
 // Sits on top of lib.mjs (low-level path/frontmatter helpers). No external deps. ESM.
 //

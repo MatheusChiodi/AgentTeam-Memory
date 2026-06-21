@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // show — print one note (frontmatter + body), or list candidates when ambiguous.
 import { resolveNotes, formatNote, relOf } from '../notes.mjs';
 import { fail } from './_ctx.mjs';

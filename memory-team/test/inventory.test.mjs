@@ -26,6 +26,9 @@ const PHASE3 = [
   'blockers', 'glossary', 'progress', 'changelog', 'mindmap',
 ];
 
+// Forensic watermark commands (authorship provenance + canary verification).
+const WATERMARK = ['whoami', 'verify'];
+
 test('inventory: every base (Fases 0/1/2) command still registered — no regression', async () => {
   const cmds = await loadCommands();
   for (const name of BASE) assert.ok(cmds.has(name), `base command missing: ${name}`);
@@ -38,9 +41,15 @@ test('inventory: every Fase 3 command registered (all 20 added)', async () => {
   assert.equal(PHASE3.length, 20);
 });
 
-test('inventory: total command count is 54 (34 base + 20 new)', async () => {
+test('inventory: every watermark command registered (whoami + verify)', async () => {
   const cmds = await loadCommands();
-  assert.ok(cmds.size >= 54, `expected >= 54 commands, got ${cmds.size}`);
+  for (const name of WATERMARK) assert.ok(cmds.has(name), `watermark command missing: ${name}`);
+  assert.equal(WATERMARK.length, 2);
+});
+
+test('inventory: total command count is exactly 56 (34 base + 20 phase-3 + 2 watermark)', async () => {
+  const cmds = await loadCommands();
+  assert.equal(cmds.size, 56, `expected exactly 56 commands, got ${cmds.size}`);
 });
 
 test('inventory: every command honors the contract (name/summary/usage/run)', async () => {
@@ -54,7 +63,7 @@ test('inventory: every command honors the contract (name/summary/usage/run)', as
   }
 });
 
-test('inventory: no command name collisions across base + phase 3', () => {
-  const all = [...BASE, ...PHASE3];
+test('inventory: no command name collisions across base + phase 3 + watermark', () => {
+  const all = [...BASE, ...PHASE3, ...WATERMARK];
   assert.equal(new Set(all).size, all.length, 'duplicate command name in the expected inventory');
 });

@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // todo — aggregate every checkbox scattered across note bodies into one place, and
 // flip one to done. List mode collects `- [ ]` (open) / `- [x]` (done) via the
 // shared extractor. The `todo check <ref> "<text>"` subcommand resolves a note,

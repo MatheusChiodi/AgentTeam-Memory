@@ -5,7 +5,7 @@
 > **visualizes the system** (Mermaid, dashboard, tree, sparkline, heatmap), and delivers **daily-flow
 > commands** (plan, standup, handoff, recap, todo, roadmap…).
 > Status: **planned** — extends the base of **34 commands + statusline** (Phases 0/1/2) with **20 new
-> tools** (F21–F40) → **54 commands + statusline**, under the same invariants (zero-dep, pure data layer,
+> tools** (F21–F40) → **56 commands + statusline**, under the same invariants (zero-dep, pure data layer,
 > addition without central editing). Source of truth for the features:
 > [`USER-STORIES-PHASE-3.md`](./USER-STORIES-PHASE-3.md). Base preserved:
 > [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`ARCHITECTURE-PHASE-2.md`](./ARCHITECTURE-PHASE-2.md).
@@ -235,7 +235,7 @@ Pattern per tool:
   monotonic, `mermaidEscape` neutralizes, colors degrade under `NO_COLOR`).
 
 **Final validation (project gate):** `npm test` runs in full and green; an **inventory regression** test
-checks that (a) the 54 tools are registered and (b) the 34 base ones keep `summary`/`usage`.
+checks that (a) the 56 tools are registered and (b) the 34 base ones keep `summary`/`usage`.
 This proves the requirement "everything new was added **and** the logic that existed before still exists".
 
 ---

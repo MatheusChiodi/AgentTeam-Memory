@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // changelog (F39) — generate a markdown changelog from decision/learning notes, grouped by
 // created date (descending), each entry badged by type ([decision]/[learning]). `--since`
 // filters by created>=since; `--save` persists as a `memory` note (tag changelog). Determinism:

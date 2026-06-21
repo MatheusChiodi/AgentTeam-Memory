@@ -1,6 +1,6 @@
 # AgentTeam-Memory — Feature & Usage Guide
 
-A task-oriented tour of **everything the system does**: all **54 CLI commands** plus the standalone
+A task-oriented tour of **everything the system does**: all **56 CLI commands** plus the standalone
 status line and the orchestration slash commands. For each capability you get *what it is*, *when to
 reach for it*, and *how to use it* with copy-paste examples. For the design rationale see
 [ARCHITECTURE.md](./ARCHITECTURE.md); for the formal specs see [USER-STORIES.md](./USER-STORIES.md).

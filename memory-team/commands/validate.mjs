@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // validate — lint every note's frontmatter; exits 1 when any note has a problem.
 import { collectNotes } from '../notes.mjs';
 import { TYPES } from '../lib.mjs';

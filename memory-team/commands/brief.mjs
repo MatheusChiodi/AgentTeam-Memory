@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // brief — a budgeted context-pack to seed an agent (F26/US-053). The point is token
 // economy: instead of making the LLM scan the whole vault, we distill it LOCALLY here
 // (rank + estimate + fill) and hand the agent a pack that already fits a token budget.

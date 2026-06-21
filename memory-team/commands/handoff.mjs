@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // handoff — assemble a session-to-session handoff packet. Agent teams have no
 // resume, so this packet IS the continuity: latest `state` per agent + open
 // checkboxes across notes + pins + recent decisions, emitted as cohesive markdown

@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // progress (F38) — objective completion metrics across the vault: checkbox done/total,
 // how many `plan` notes are fully checked, and how many blockers are open. Shares the single
 // checkbox extractor (extractCheckboxes) with todo/handoff so the counts never drift, and the

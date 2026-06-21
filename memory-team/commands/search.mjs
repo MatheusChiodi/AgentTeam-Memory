@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // search — rank notes for a term/tag across the current project + global (or --all).
 import { collectNotes, relOf, byPinned } from '../notes.mjs';
 

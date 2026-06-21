@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // doctor — F15: read-only health check da instalação do memory-team.
 // Roda uma série de CHECKS independentes; cada um vira uma linha `✓/✗/⚠ nome — detalhe`.
 // Não corrige nada (diagnóstico puro) — só reporta e, quando útil, sugere o fix.

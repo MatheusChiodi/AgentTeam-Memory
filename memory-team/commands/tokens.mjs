@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // tokens — estimate the token cost of a note, the whole project, or a raw text
 // (F27/US-054). Deterministic heuristic via estimateTokens (≈chars/4 adjusted by word
 // count): same input ⇒ same number. A note's cost is title + summary + body summed, so

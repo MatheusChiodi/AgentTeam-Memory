@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // blockers (F36) — surface notes flagged as a risk/blocker so the lead can attack what
 // stalls the team. A note qualifies two ways: by a risk *tag* (blocker/risk/blocked,
 // case-insensitive) or by a risk *marker* in the body (blocked/blocker/risco/⚠). The tag

@@ -1,0 +1,75 @@
+AgentTeam-Memory — NOTICE
+==========================
+
+Author and sole owner
+---------------------
+This project, AgentTeam-Memory, was created by and is the exclusive work of:
+
+    Matheus Chiodi (MChiodi)
+
+There are no other authors or owners. All design, source code and documentation
+originate from this single author. Any claim of authorship by another party is
+false and may be challenged with the forensic proof described below.
+
+Official origin
+---------------
+The canonical, authoritative source of this project is:
+
+    github.com/MatheusChiodi/AgentTeam-Memory
+
+Copies obtained from anywhere else are unofficial. The forensic watermark embedded
+in this project lets the author demonstrate provenance against any redistribution.
+
+Forensic authorship watermark
+------------------------------
+This project carries a layered, tamper-evident authorship watermark:
+
+  1. CANARY (public commitment)
+     The following SHA-256 digest is published openly in the source
+     (memory-team/watermark.mjs):
+
+         98acc5a4d39191df1a474e768db004421cc759d7ccabdc24e4b30f1c6f52eaa0
+
+     It is a cryptographic commitment of the form:
+
+         CANARY = sha256( "AgentTeam-Memory::MChiodi::" + SEED )
+
+     The SEED is a SECRET pre-image known ONLY to the author. It does NOT exist
+     anywhere in this repository. Because SHA-256 is preimage-resistant, no third
+     party can produce a SEED that hashes to the CANARY. The author can, at any
+     time, reveal the SEED and prove authorship — this is the digital equivalent
+     of a sealed, dated signature.
+
+  2. Zero-width steganographic signature
+     The plain string "MChiodi" is woven, as invisible zero-width Unicode
+     characters, into always-present program output (the CLI help banner, the
+     `whoami` panel title, and the Claude Code statusline). The signature is
+     generated at runtime — never stored as invisible literals — and can be
+     recovered programmatically from any captured output.
+
+  3. Visible attribution
+     The author is named in the LICENSE, in this NOTICE, in the README banner,
+     and printed by `memory whoami`.
+
+How to verify
+-------------
+  - Show provenance:        node memory.mjs whoami
+  - Prove authorship:       node memory.mjs verify <seed>
+                            (only the author holds the seed; a correct seed
+                             prints "autoria COMPROVADA" and exits 0)
+
+Attribution requirement (DMCA / licensing)
+------------------------------------------
+This software is distributed under the MIT License WITH MANDATORY ATTRIBUTION
+(see the LICENSE file). Any use, deployment, demonstration, publication,
+distribution or derivative work MUST clearly and visibly credit:
+
+    "Built on AgentTeam-Memory, created by Matheus Chiodi (MChiodi)."
+
+Removing, hiding, obscuring or misrepresenting this attribution — or the forensic
+watermark above — violates the LICENSE and the author's rights, and may be the
+subject of a DMCA takedown and other legal remedies. The CANARY and the
+zero-width signature serve as evidence of the original authorship in any such
+dispute.
+
+© 2026 Matheus Chiodi (MChiodi). All rights reserved where not granted by the LICENSE.

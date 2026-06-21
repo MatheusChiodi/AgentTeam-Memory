@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // activity (F24) — a sparkline of notes created per day across a window (`--days N`,
 // default 14), plus total / average / peak day. `--by agent|type` emits one sparkline
 // per dimension. "Today" is injectable (`--today YYYY-MM-DD`) so tests never read the

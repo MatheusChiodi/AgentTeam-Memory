@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // heatmap (F25) — a GitHub-style calendar of note creation: a grid of `--weeks N`
 // (default 12) columns × 7 weekday rows. Intensity comes from heatLevels (quartiles of
 // the *non-zero* counts in the period, not fixed thresholds) → heatGlyph. "Today" is

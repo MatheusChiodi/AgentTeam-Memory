@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // render.mjs — pure presentation primitives shared by the Fase 3 visual tools.
 // No console, no process.exit, no filesystem: every function is pure and unit-testable
 // in isolation (mirrors lib.mjs/notes.mjs). Colors degrade to plain text under

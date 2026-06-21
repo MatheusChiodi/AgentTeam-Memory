@@ -1,18 +1,18 @@
 <div align="center">
 
-<img src="docs/assets/hero-banner.svg" alt="AgentTeam-Memory — persistent, per-project memory for Claude Code agent teams · 54 commands · zero dependencies · 406 tests · one Obsidian vault" width="100%">
+<img src="docs/assets/hero-banner.svg" alt="AgentTeam-Memory — persistent, per-project memory for Claude Code agent teams · 56 commands · zero dependencies · 420 tests · one Obsidian vault" width="100%">
 
 &nbsp;
 
 [![Node](https://img.shields.io/badge/node-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A52.1.32-d97757)](https://docs.anthropic.com/en/docs/claude-code)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](#9-design-invariants)
-[![Tests](https://img.shields.io/badge/tests-node%3Atest%20406%2F406-success)](#8-testing)
+[![Tests](https://img.shields.io/badge/tests-node%3Atest%20420%2F420-success)](#8-testing)
 [![License](https://img.shields.io/badge/license-MIT%20%2B%20Attribution-blue)](LICENSE)
 
 **A zero-dependency Node.js (ESM) CLI that gives a Claude Code _agent team_ a shared brain — one that survives every session.**
 
-[**Quick start**](#3-setup-2-min) &nbsp;·&nbsp; [**Commands**](#7-command-reference-54) &nbsp;·&nbsp; [**Feature guide**](docs/FEATURES.md) &nbsp;·&nbsp; [**Architecture**](docs/ARCHITECTURE.md)
+[**Quick start**](#3-setup-2-min) &nbsp;·&nbsp; [**Commands**](#7-command-reference-56) &nbsp;·&nbsp; [**Feature guide**](docs/FEATURES.md) &nbsp;·&nbsp; [**Architecture**](docs/ARCHITECTURE.md)
 
 <sub>created by **Matheus Chiodi (MChiodi)**</sub>
 
@@ -36,7 +36,7 @@
 - [4. What the setup does](#4-what-the-setup-does)
 - [5. Runtime architecture](#5-runtime-architecture)
 - [6. Vault structure](#6-vault-structure)
-- [7. Command reference (54)](#7-command-reference-54)
+- [7. Command reference (56)](#7-command-reference-56)
   - [Core](#core)
   - [Navigation \& reading](#navigation--reading)
   - [Tags](#tags)
@@ -98,7 +98,7 @@ flowchart LR
     L["librarian"]
   end
   LEAD -->|SendMessage / task list| R & E & V & L
-  R & E & V & L -->|"node memory.mjs save / search"| CLI[["memory CLI<br/>(54 commands)"]]
+  R & E & V & L -->|"node memory.mjs save / search"| CLI[["memory CLI<br/>(56 commands)"]]
   CLI --> VAULT[("Obsidian vault<br/>partitioned per project")]
   VAULT -.->|"READ before acting"| R & E & V & L
   HOOKS["Hooks (opt-in, fail-open)<br/>TaskCompleted · TeammateIdle"] -.->|enforce note-before-close| CLI
@@ -160,7 +160,7 @@ node memory-team/statusline.mjs --install     # register it in ~/.claude/setting
 node memory-team/statusline.mjs --uninstall   # remove it
 ```
 
-Thresholds (`warn`, `danger`) come from `config set statusline.warn 70` (see the [`config`](#7-command-reference-54) tool).
+Thresholds (`warn`, `danger`) come from `config set statusline.warn 70` (see the [`config`](#7-command-reference-56) tool).
 
 <div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
@@ -288,7 +288,7 @@ fields they don't understand.
 
 <div align="center"><img src="docs/assets/divider.svg" width="100%" alt=""></div>
 
-## 7. Command reference (54)
+## 7. Command reference (56)
 
 CLI entry point: `node "~/.claude/memory-team/memory.mjs" <command>`. Run `… memory.mjs help` for the
 live list. `--json` works on every read command; `<ref>` is a **loose reference** resolved by
@@ -416,6 +416,13 @@ The heavy lifting (ranking, summarizing, counting, budgeting) is **local and heu
 | `progress [--all] [--json]` | objective metrics: checkboxes done/total (% + bar), fully-checked plans, open blockers |
 | `changelog [--since YYYY-MM-DD] [--save] [--today YYYY-MM-DD] [--all] [--json]` | a Markdown changelog from `decision`/`learning` notes, by date |
 
+### Provenance & authorship — forensic watermark
+
+| Command | Purpose |
+| --- | --- |
+| `whoami [--json]` | show authorship (author/repo/canary) and confirm the forensic watermark is active (see [NOTICE](NOTICE)) |
+| `verify <seed>` | prove authorship by supplying the secret pre-image of the public **canary** (`sha256` commitment); **exit 1** on mismatch, **2** on missing seed |
+
 > **Slash commands (orchestration).** `.claude/commands/` ships `/diagram` and `/mindmap` (which **fan
 > out** agents to architect a system diagram by subsystem, then a reviewer consolidates and the engine
 > materializes the Mermaid), plus `/standup`, `/handoff`, `/recap`, `/plan` as direct wrappers of the
@@ -476,7 +483,7 @@ memory-team/
   memory.mjs                # thin dispatcher: argv → command, render lines/data/exit
   render.mjs                # pure presentation primitives (ANSI, bar, sparkline, box, tree, Mermaid escaping)
   analyze.mjs               # pure text analysis (token estimate, extractive summary, query scoring, checkboxes)
-  commands/                 # one file per command (registry auto-discovers; 54 commands)
+  commands/                 # one file per command (registry auto-discovers; 56 commands)
   statusline.mjs            # standalone Claude Code status line (real-time plan/ctx/cost)
   CLAUDE.md                 # Memory Protocol (injected into ~/.claude/CLAUDE.md)
   agents/                   # researcher · executor · reviewer · librarian

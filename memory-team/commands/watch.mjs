@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // watch (F13 / US-038) — live tail of the vault. Long-running, so it deliberately
 // steps OUTSIDE the `{ ok, lines, data }` contract every other command obeys: instead
 // of returning a result, `run` streams a line to stdout for each NEW note created

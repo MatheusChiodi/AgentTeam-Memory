@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // list — enumerate notes with optional filters, newest first (pinned float to top).
 import { collectNotes, relOf, byPinned } from '../notes.mjs';
 

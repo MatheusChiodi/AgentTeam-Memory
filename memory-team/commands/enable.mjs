@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // enable — opt-in: write the `.memory-team` marker so the hooks enforce memory here.
 import { writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';

@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // orphans — notes with no inbound and no outbound wikilinks (fully disconnected).
 import { collectNotes, wikilinksOf, relOf } from '../notes.mjs';
 

@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // template — scaffold a note from a named template (built-in or vault `_templates/`).
 // `template list` enumerates templates; `template <name> "<title>"` creates a note whose
 // body is the template skeleton with placeholders filled, reusing save's canonical

@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // standup — cross-agent daily: what each agent produced in a time window.
 // Groups window notes (created >= since) by agent; per agent reports deliverables
 // (`type: title`), a count, and the most recent known `state` note. Lets the lead

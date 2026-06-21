@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // archive — move a single resolved note into the project _archive (or --restore it back).
 import { renameSync } from 'node:fs';
 import { join, basename, dirname } from 'node:path';

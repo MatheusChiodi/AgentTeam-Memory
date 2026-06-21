@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // where — show vault path, detected project, enabled status, note count.
 import { existsSync } from 'node:fs';
 import {

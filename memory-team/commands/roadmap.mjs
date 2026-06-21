@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // roadmap — turn `decision` notes into a timeline grouped by month, to communicate
 // the project's direction. Collects type:decision (+ learning with --include
 // learning), sorts by created, groups by YYYY-MM, emits markdown `## YYYY-MM` with

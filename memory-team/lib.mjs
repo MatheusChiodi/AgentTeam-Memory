@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // lib.mjs — shared memory-layer helpers for the memory-team system.
 // Used by memory.mjs (CLI) and the hooks. No external dependencies. ESM.
 //

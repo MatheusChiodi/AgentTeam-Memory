@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // rename — give a note a new title: rewrite its `# heading`, slug + keep any date prefix.
 import { renameSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname, basename } from 'node:path';

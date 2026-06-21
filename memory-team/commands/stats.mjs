@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // stats — aggregate counts over the vault (totals, by type/agent/project, top tags).
 import { collectNotes, tagHistogram } from '../notes.mjs';
 

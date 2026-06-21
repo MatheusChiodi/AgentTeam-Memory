@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // _ctx.mjs — argument parsing + execution context shared by every command.
 // A command is `{ name, summary, usage, run(ctx) }` where run returns
 // `{ ok, code?, lines?, data? }`. Keeping ROOT/PROJECT on the ctx (instead of

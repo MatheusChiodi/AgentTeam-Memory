@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // plan — scaffold a structured planning note (objective, steps, risks, done-when).
 // Standardizes how a teammate kicks off a task: one memory note (tag `plan`) with
 // fixed sections. `--steps "a;b;c"` pre-populates the Steps section as `- [ ]`

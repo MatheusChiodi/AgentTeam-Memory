@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // pin — flag/unflag a single note as `pinned` (rewrites it on disk), or list pinned.
 // Marking only: the ordering that floats pinned notes to the top of list/search/recent
 // is wired by those commands, not here.

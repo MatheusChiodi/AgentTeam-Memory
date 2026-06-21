@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // mindmap (F40) — a Mermaid `mindmap` centered on one note (<ref>) or a tag (--tag). With a
 // note: root = the note; branches = its 1st-level [[wikilinks]] plus notes sharing >=1 tag.
 // With a tag: root = the tag; branches = notes carrying it. Labels go through mermaidEscape so

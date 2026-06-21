@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // statusline.mjs — F11: statusLine do memory-team para o Claude Code.
 //
 // O Claude Code chama este script a cada atualização de tela, entregando um JSON de
@@ -22,6 +23,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { vaultRoot, projectName, isEnabled, partition, globalPart, walk } from './lib.mjs';
+import { SIGIL } from './watermark.mjs';
 
 const SELF = fileURLToPath(import.meta.url);
 
@@ -249,7 +251,12 @@ function main() {
     return;
   }
   try {
-    process.stdout.write(`${render(payload)}\n`);
+    // SIGIL (zero-width) é anexado DEPOIS de toda formatação e medição de largura: não
+    // afeta `render.visibleLen` (que só strip-a ANSI) nem o alinhamento de box/bar. O
+    // wrap em try garante que a assinatura jamais derruba a render.
+    let line = render(payload);
+    try { line += SIGIL; } catch { /* assinatura é best-effort, nunca falha a statusline */ }
+    process.stdout.write(`${line}\n`);
   } catch {
     // Fail-safe absoluto: nunca derruba a render do Claude Code.
     process.stdout.write(`${dim(`memory-team · ${payload?.model?.display_name || ''}`)}\n`);

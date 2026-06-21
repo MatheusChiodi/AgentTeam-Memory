@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // tldr — extractive summary of a note (or the whole set) so the agent skips re-reading
 // bodies (F29/US-056). Heuristic, no LLM: extractiveSummary picks the top-N weighted
 // sentences (term frequency + lead-sentence bonus + title-term bonus), deterministic.

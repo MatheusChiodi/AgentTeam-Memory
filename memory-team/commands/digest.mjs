@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // digest — session summary: notes in a time window, grouped by agent and by type.
 // Mirrors timeline/stats (collectNotes + --since/--all/--json). With --save it
 // persists the *rendered markdown* as a `memory` note (tag `digest`): we delegate

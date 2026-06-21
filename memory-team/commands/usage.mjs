@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // usage — F12: historical cost/token ledger over Claude Code session transcripts.
 // The statusline (F11) shows only the "now"; this aggregates the .jsonl transcripts
 // into a per-day / per-project history. It scans a transcripts directory recursively

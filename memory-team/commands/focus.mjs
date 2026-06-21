@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // focus — budgeted retrieval for a query (F28/US-055). Like brief, but query-first:
 // rank every note by scoreByQuery desc (drop score 0 — pure noise), then fill by token
 // budget. --top caps the count, --budget caps tokens; whichever limit hits first wins.

@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // glossary (F37) — extract recurring terms from note summaries+titles and list where each
 // appears, giving the team a shared vocabulary. Reuses analyze.tokenize (the PT+EN stopword
 // list) so the glossary speaks the same dialect as relate/focus. Frequency is counted across

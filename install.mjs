@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // install.mjs — promote the memory-team system to the USER scope (~/.claude) so it works
 // in every project, and create the central vault. Idempotent. Non-destructive merge.
 //

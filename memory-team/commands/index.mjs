@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // index — regenerate the per-project _index.md (MOC) and the master index.
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';

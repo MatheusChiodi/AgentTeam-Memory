@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // tree (F23) — the vault as a directory-like tree: project → type → note (or `--by
 // agent`). Connectors come from treeLines; each type carries a glyph and each leaf shows
 // `name — short summary`. `--depth N` clamps how deep we descend; `--all` spans every

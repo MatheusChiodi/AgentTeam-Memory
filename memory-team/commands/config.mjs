@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // config — read/adjust memory-team preferences, persisted in <vault>/config.json.
 // The file is a flat key→value map (keys like `statusline.warn`), the exact shape
 // statusline.mjs reads — so `config set` is what makes those thresholds tunable

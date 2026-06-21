@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // dedupe — report groups of notes that look like duplicates (same title slug or summary).
 import { collectNotes } from '../notes.mjs';
 

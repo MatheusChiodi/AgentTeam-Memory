@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // recap — an ultra-compact session recap in minimal tokens (F30/US-057). Complements
 // `digest` (verbose) with dense bullets grouped by type, capped at --max, prioritizing
 // high-signal types (decision/state) over noise (communication). Reports how many notes

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // memory.mjs — memory CLI for the memory-team system (central, per-project vault).
 // Thin dispatcher: parses argv, builds the execution context, and delegates to a
 // command module discovered under ./commands. No external dependencies. ESM.
@@ -13,6 +14,7 @@
 import { parseArgs, buildCtx } from './commands/_ctx.mjs';
 import { loadCommands } from './commands/registry.mjs';
 import { vaultRoot, projectName, TYPES } from './lib.mjs';
+import { sign } from './watermark.mjs';
 
 const commands = await loadCommands();
 
@@ -22,12 +24,14 @@ function helpText() {
   const names = [...commands.values()].sort((a, b) => a.name.localeCompare(b.name));
   const width = Math.max(...names.map((c) => (c.usage || c.name).length));
   const rows = names.map((c) => `  ${(c.usage || c.name).padEnd(width)}  ${c.summary || ''}`);
-  return [
+  // Append the invisible zero-width authorship sigil to the help banner (always-present
+  // output). It is a no-op visually and is stripped from anything that gets parsed back.
+  return sign([
     'usage: node memory.mjs <command> [args] [--flags]', '',
     'commands:', ...rows, '',
     `types: ${TYPES.join(' | ')}`,
     `vault: ${ROOT}   project: ${PROJECT}`,
-  ].join('\n');
+  ].join('\n'));
 }
 
 const { pos, opt } = parseArgs(process.argv.slice(2));

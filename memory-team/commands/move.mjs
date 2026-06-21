@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // move — relocate a note to the equivalent folder in another project, fixing fm.project.
 import { writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';

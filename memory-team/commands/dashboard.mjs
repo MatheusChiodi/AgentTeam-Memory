@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // dashboard (F22) — a compact ANSI panel summarizing the vault: counts by type/agent
 // (mini histograms), the most-recent notes, pin count and orphan count (notes with no
 // outgoing [[wikilinks]]). One screen instead of five commands. Colors degrade to plain

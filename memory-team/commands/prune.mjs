@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // prune — find notes whose body is empty or still the save template placeholder.
 // Dry-run by default (just lists); --apply moves candidates into the project _archive.
 import { renameSync } from 'node:fs';

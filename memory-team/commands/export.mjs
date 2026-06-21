@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // export — dump notes as a JSON array or a concatenated Markdown bundle (optionally to a file).
 import { writeFileSync } from 'node:fs';
 import { collectNotes, formatNote } from '../notes.mjs';

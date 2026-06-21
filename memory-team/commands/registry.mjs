@@ -1,3 +1,4 @@
+// AgentTeam-Memory — © 2026 Matheus Chiodi (MChiodi). MIT w/ Attribution. Forensic watermark: see NOTICE.
 // registry.mjs — auto-discovers every command module in this folder.
 // A command file just `export default { name, summary, usage, run }`; dropping a new
 // file here registers it automatically (no central edit → no merge conflicts between
