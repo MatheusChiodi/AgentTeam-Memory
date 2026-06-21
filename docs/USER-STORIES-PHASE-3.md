@@ -62,7 +62,7 @@ returning `{ ok, code?, lines?, data? }`. **Zero external dependency.**
 ### F21 — `diagram` (⭐): system diagram / note graph · US-048
 **As a** lead **I want** to run `diagram` **so that** I get a **Mermaid diagram** of the system (the graph of
 `[[wikilinks]]` between notes, or the structure by type/agent/tag) **so that** I see the memory's architecture
-at a glance, in the terminal and pasteable into Obsidian. It is the engine behind the `/diagrama`
+at a glance, in the terminal and pasteable into Obsidian. It is the engine behind the `/diagram`
 slash-command, which sends multiple agents to architect the diagram (US-068).
 - **Tool:** `diagram` · **Feature:** F21
 - **Acceptance:**
@@ -298,11 +298,11 @@ on a note (or tag) with its neighbors by link/tag **so that** I explore a topic 
 ## Cross-cutting
 
 ### US-068 — Orchestration slash-commands in Claude Code
-**As a** vibe-coder **I want** slash-commands (`/diagrama`, `/standup`, `/handoff`, `/recap`, `/plano`,
+**As a** vibe-coder **I want** slash-commands (`/diagram`, `/standup`, `/handoff`, `/recap`, `/plan`,
 `/mindmap`) **that make memory-team use the engines above** **so that** I trigger multi-agent flows
 without memorizing the CLI.
 - **Delivery:** `.claude/commands/<name>.md` files that instruct the lead to (1) read the vault, (2) trigger
-  the corresponding tool, (3) — in the case of `/diagrama` and `/mindmap` — **fan-out of agents** that
+  the corresponding tool, (3) — in the case of `/diagram` and `/mindmap` — **fan-out of agents** that
   architect the diagram by subsystem and the reviewer consolidates.
 - **Acceptance:** each file references the real tool and respects the protocol's output discipline
   (result + where the note landed, without narration). *(Prompt layer — validated by inspection, not by

@@ -388,9 +388,9 @@ The heavy lifting (ranking, summarizing, counting, budgeting) is **local and heu
 | `progress [--all] [--json]` | objective metrics: checkboxes done/total (% + bar), fully-checked plans, open blockers |
 | `changelog [--since YYYY-MM-DD] [--save] [--today YYYY-MM-DD] [--all] [--json]` | a Markdown changelog from `decision`/`learning` notes, by date |
 
-> **Slash commands (orchestration).** `.claude/commands/` ships `/diagrama` and `/mindmap` (which **fan
+> **Slash commands (orchestration).** `.claude/commands/` ships `/diagram` and `/mindmap` (which **fan
 > out** agents to architect a system diagram by subsystem, then a reviewer consolidates and the engine
-> materializes the Mermaid), plus `/standup`, `/handoff`, `/recap`, `/plano` as direct wrappers of the
+> materializes the Mermaid), plus `/standup`, `/handoff`, `/recap`, `/plan` as direct wrappers of the
 > tools above.
 
 > **Safety guarantees.** Mutating tools (`tag`, `retag`, `prune`, `archive`, `move`, `rename`, `import`)
@@ -454,7 +454,7 @@ memory-team/
   agents/                   # researcher · executor · reviewer · librarian
   hooks/                    # task-completed.mjs · teammate-idle.mjs (opt-in, fail-open)
   test/                     # node:test suite (real temp vault, no mocks)
-.claude/commands/           # slash commands: setup · diagrama · mindmap · standup · handoff · recap · plano
+.claude/commands/           # slash commands: setup · diagram · mindmap · standup · handoff · recap · plan
 docs/                       # FEATURES.md (feature & usage guide) · ARCHITECTURE*.md · USER-STORIES*.md · topic prompt packs
 tools/build-guide.mjs       # regenerates docs/system-guide.excalidraw
 START.md                    # install + day-to-day operation + lead prompts

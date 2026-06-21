@@ -313,12 +313,12 @@ A Markdown changelog from `decision`/`learning` notes, by date, with a type badg
 
 | Slash command | What it does |
 | --- | --- |
-| `/diagrama [--scope …]` | **Fan-out**: spawns agents to architect the system by subsystem, a reviewer consolidates, then the `diagram` engine materializes and saves the Mermaid. |
+| `/diagram [--scope …]` | **Fan-out**: spawns agents to architect the system by subsystem, a reviewer consolidates, then the `diagram` engine materializes and saves the Mermaid. |
 | `/mindmap <ref>\|--tag t` | Fan-out to explore a topic, then materializes a `mindmap`. |
 | `/standup [--since]` | Wrapper that runs `standup` from the vault. |
 | `/handoff [--save]` | Wrapper that builds the handoff packet. |
 | `/recap [--since] [--max]` | Wrapper for the dense recap. |
-| `/plano "<goal>" [--steps]` | Wrapper that scaffolds a plan note. |
+| `/plan "<goal>" [--steps]` | Wrapper that scaffolds a plan note. |
 | `/setup [--vault dir]` | Install/promote the system into `~/.claude`. |
 
 ---

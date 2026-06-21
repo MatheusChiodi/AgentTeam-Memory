@@ -42,7 +42,7 @@ flowchart TB
   HLP["pure helpers (new)<br/>render.mjs · analyze.mjs"]
   DATA["data layer (base)<br/>lib.mjs · notes.mjs"]
   VAULT[("Obsidian Vault")]
-  SLASH[".claude/commands/*<br/>(/diagrama /standup /handoff…)"]
+  SLASH[".claude/commands/*<br/>(/diagram /standup /handoff…)"]
 
   SLASH -. "orchestrates agents that call" .-> CMD
   CMD --> HLP
@@ -192,11 +192,11 @@ flowchart TD
 ## 7. Orchestration layer — slash-commands (US-068)
 
 `.claude/commands/<name>.md` files that are **not** registry tools: they are prompts that instruct the
-lead/teammates of the memory-team. The anchor case is `/diagrama`:
+lead/teammates of the memory-team. The anchor case is `/diagram`:
 
 ```mermaid
 flowchart LR
-  U["/diagrama"] --> LEAD["lead reads the vault"]
+  U["/diagram"] --> LEAD["lead reads the vault"]
   LEAD -->|fan-out| A1["agent: subsystem A"]
   LEAD -->|fan-out| A2["agent: subsystem B"]
   LEAD -->|fan-out| A3["agent: data flow"]
@@ -205,9 +205,9 @@ flowchart LR
   ENG --> NOTE["memory note (tag diagram) in the vault"]
 ```
 
-`/diagrama` and `/mindmap` do a **fan-out** (multiple agents architect by subsystem, the reviewer
+`/diagram` and `/mindmap` do a **fan-out** (multiple agents architect by subsystem, the reviewer
 consolidates, the `diagram`/`mindmap` engine materializes the Mermaid and saves it). `/standup`, `/handoff`,
-`/recap`, `/plano` are direct wrappers of the eponymous tools. They all respect the output discipline of the
+`/recap`, `/plan` are direct wrappers of the eponymous tools. They all respect the output discipline of the
 protocol (the result + where the note landed). They are validated **by inspection** (a prompt layer), not by
 unit test — the testable logic lives in the tools they call.
 
