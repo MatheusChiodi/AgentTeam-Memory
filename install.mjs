@@ -17,7 +17,7 @@
 //   - scaffolds the central vault and writes a bootstrap note + master index
 
 import {
-  readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, readdirSync,
+  readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, readdirSync, cpSync,
 } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,8 +27,6 @@ import { buildSlashCommands } from './memory-team/slash.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = join(HERE, 'memory-team');
-// Universal default: next to the Claude Code config. Override with --vault <dir>.
-const DEFAULT_VAULT = join(homedir(), '.claude', 'memory-vault');
 
 function arg(name, def) {
   const i = process.argv.indexOf(`--${name}`);
@@ -42,13 +40,42 @@ const ts = () => {
 };
 
 const HOME = fwd(arg('home', homedir()));
-const VAULT = fwd(arg('vault', DEFAULT_VAULT));
 const ENFORCE_GLOBAL = process.argv.includes('--enforce-global');
 const CLAUDE = join(HOME, '.claude');
 const DEST = join(CLAUDE, 'memory-team');
 const AGENTS = join(CLAUDE, 'agents');
 const MEM = fwd(join(DEST, 'memory.mjs'));
 const log = (s) => console.log(s);
+// Universal default: next to the Claude Code config of the INSTALLING home (so --home is
+// honoured in sandboxes). Override with --vault <dir>.
+const DEFAULT_VAULT = join(CLAUDE, 'memory-vault');
+
+// Read the settings.json that may already exist, so a re-setup can recover the user's
+// previously chosen vault. Parse defensively; settings.json proper is merged later (§3).
+const settingsPath = join(CLAUDE, 'settings.json');
+let settings = {};
+let settingsRaw = null;
+if (existsSync(settingsPath)) {
+  settingsRaw = readFileSync(settingsPath, 'utf8');
+  try { settings = JSON.parse(settingsRaw.replace(/^﻿/, '')); } catch (e) {
+    console.error(`! ${settingsPath} is not valid JSON (${e.message}). Aborting to avoid clobbering it.`);
+    process.exit(1);
+  }
+}
+
+// Vault resolution cascade: an explicit --vault wins; else keep the vault from a prior
+// install (settings.env.MEMORY_VAULT) so re-running /setup never resets a custom location;
+// else fall back to the universal default. PREV_VAULT is what we may migrate FROM.
+const explicitVault = arg('vault', null);
+const PREV_VAULT = settings.env && settings.env.MEMORY_VAULT ? fwd(settings.env.MEMORY_VAULT) : null;
+const VAULT = fwd(explicitVault || PREV_VAULT || DEFAULT_VAULT);
+
+// --print-vault: resolve the cascade and print the path WITHOUT installing. Lets /setup show
+// the user their current vault before asking whether to keep or move it.
+if (process.argv.includes('--print-vault')) {
+  console.log(VAULT);
+  process.exit(0);
+}
 
 mkdirSync(DEST, { recursive: true });
 mkdirSync(join(DEST, 'hooks'), { recursive: true });
@@ -94,17 +121,11 @@ const slashCmds = await buildSlashCommands(MEM, join(HERE, '.claude', 'commands'
 for (const { name, content } of slashCmds) writeFileSync(join(SLASH_DIR, `${name}.md`), content, 'utf8');
 log(`✓ ${slashCmds.length} slash commands -> ${fwd(SLASH_DIR)} (/memory:<cmd>)`);
 
-// 3) merge settings.json (with backup)
-const settingsPath = join(CLAUDE, 'settings.json');
-let settings = {};
-if (existsSync(settingsPath)) {
-  const rawS = readFileSync(settingsPath, 'utf8');
-  try { settings = JSON.parse(rawS.replace(/^﻿/, '')); } catch (e) {
-    console.error(`! ${settingsPath} is not valid JSON (${e.message}). Aborting to avoid clobbering it.`);
-    process.exit(1);
-  }
+// 3) merge settings.json (with backup). The file was already read+parsed above for the
+//    vault cascade; here we just back up the original bytes before rewriting.
+if (settingsRaw != null) {
   const bak = `${settingsPath}.bak-${ts()}`;
-  writeFileSync(bak, rawS, 'utf8');
+  writeFileSync(bak, settingsRaw, 'utf8');
   log(`✓ backup -> ${fwd(bak)}`);
 }
 settings.env = settings.env || {};
@@ -159,6 +180,29 @@ writeFileSync(claudeMd, md, 'utf8');
 log(`✓ Memory Protocol injected -> ${fwd(claudeMd)}`);
 
 // 5) scaffold central vault + bootstrap note + master index
+// 5a) MIGRATE: if the vault location changed and the previous one held notes, copy them
+//     into the new vault. Non-destructive both ways: the old vault is left intact, and
+//     existing files in the new vault are never overwritten (force:false).
+const migratedFrom = PREV_VAULT;
+if (migratedFrom && migratedFrom !== VAULT && existsSync(migratedFrom)
+    && readdirSync(migratedFrom).length > 0) {
+  // Guard the pathological case: copying a directory INTO its own subtree makes cpSync recurse
+  // and throw ERR_FS_CP_EINVAL. Skip migration there (the old notes stay put and reachable)
+  // rather than abort a half-written install. The try/catch keeps migration best-effort so a
+  // copy failure can NEVER leave settings pointing at a vault we failed to populate.
+  const nested = VAULT === migratedFrom || VAULT.startsWith(`${migratedFrom}/`);
+  if (nested) {
+    log(`• migration skipped: new vault ${VAULT} is inside the old one ${migratedFrom}; old notes kept there`);
+  } else {
+    try {
+      mkdirSync(VAULT, { recursive: true });
+      cpSync(migratedFrom, VAULT, { recursive: true, force: false, errorOnExist: false });
+      log(`✓ migrated vault notes ${migratedFrom} -> ${VAULT} (old kept intact)`);
+    } catch (e) {
+      log(`• migration skipped (${e.code || e.message}); old notes remain at ${migratedFrom}`);
+    }
+  }
+}
 mkdirSync(join(VAULT, 'projects'), { recursive: true });
 mkdirSync(join(VAULT, 'global', 'memory'), { recursive: true });
 mkdirSync(join(VAULT, 'global', 'board'), { recursive: true });
