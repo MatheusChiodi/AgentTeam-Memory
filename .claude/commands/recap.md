@@ -1,6 +1,6 @@
 ---
 description: Ultra-compact recap of the window (decisions, deliverables, states) spending minimal tokens
-argument-hint: [--since YYYY-MM-DD] [--max N]
+argument-hint: "[--since YYYY-MM-DD] [--max N]"
 allowed-tools: Bash(node:*)
 ---
 You are the **lead** picking the context back up. Instead of re-reading note by note (token-expensive),

@@ -23,6 +23,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
 import { execFileSync } from 'node:child_process';
+import { buildSlashCommands } from './memory-team/slash.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = join(HERE, 'memory-team');
@@ -83,6 +84,15 @@ for (const a of readdirSync(join(SRC, 'agents'))) {
   nAgents++;
 }
 log(`✓ ${nAgents} agents -> ${fwd(AGENTS)}`);
+
+// 2b) GLOBAL slash commands: publish all 56 CLI commands as /memory:<cmd> so they work in ANY
+//     project (Claude Code reads ~/.claude/commands/). Derived from the registry → new commands
+//     ship automatically; curated .md prompts (.claude/commands/) win over the generated wrapper.
+const SLASH_DIR = join(CLAUDE, 'commands', 'memory');
+mkdirSync(SLASH_DIR, { recursive: true });
+const slashCmds = await buildSlashCommands(MEM, join(HERE, '.claude', 'commands'));
+for (const { name, content } of slashCmds) writeFileSync(join(SLASH_DIR, `${name}.md`), content, 'utf8');
+log(`✓ ${slashCmds.length} slash commands -> ${fwd(SLASH_DIR)} (/memory:<cmd>)`);
 
 // 3) merge settings.json (with backup)
 const settingsPath = join(CLAUDE, 'settings.json');

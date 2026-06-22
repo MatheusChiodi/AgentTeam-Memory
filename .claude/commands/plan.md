@@ -1,6 +1,6 @@
 ---
 description: Create a structured plan note (goal, steps, risks, done-when) in the vault
-argument-hint: "<goal>" [--steps "a;b;c"]
+argument-hint: "<goal> [--steps a;b;c]"
 allowed-tools: Bash(node:*)
 ---
 You are a **teammate** kicking off a task. Standardize the start by creating the plan note:
